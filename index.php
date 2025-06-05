@@ -408,7 +408,7 @@
 
     <script>
       window.THOS = {
-        version: '6 Build-25'
+        version: '6 Build-26'
       };
 
       let timeoutSeconds = 180;
