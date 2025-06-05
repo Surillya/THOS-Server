@@ -1,0 +1,14 @@
+{
+  "jpg": {"app":"imager.php", "icon":"🖼️"},
+  "jpeg": {"app":"imager.php", "icon":"🖼️"},
+  "png": {"app":"imager.php", "icon":"🖼️"},
+  "gif": {"app":"imager.php", "icon":"🖼️"},
+  "webp": {"app":"imager.php", "icon":"🖼️"},
+  "mp3": {"app":"player.php", "icon":"🎵"},
+  "wav": {"app":"player.php", "icon":"🎵"},
+  "opus": {"app":"player.php", "icon":"🎵"},
+  "m4a": {"app":"player.php", "icon":"🎵"},
+  "thp": {"app":"thp.php", "icon":"📦"},
+  "mp4": {"app":"video.php", "icon":"📽️"},
+  "webm": {"app":"video.php", "icon":"📽️"}
+}
