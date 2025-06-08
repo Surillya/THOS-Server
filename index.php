@@ -395,13 +395,13 @@
         <h2 class="text-xl font-semibold mb-6 tracking-wide">Power Options</h2>
         <div class="space-y-3">
           <button id="shutdownBtn"
-            class="w-full py-2 px-4 border border-dotted rounded-xl transition-all duration-200 text-sm bg-white/5 hover:bg-white/10 backdrop-blur-sm border-red-400 text-red-300 hover:text-red-100 hover:border-red-300">Shutdown</button>
+            class="w-full py-2 px-4 border border-dotted rounded-xl transition-all duration-200 text-sm bg-black/40 hover:bg-black/50 backdrop-blur-sm border-red-400 text-red-300 hover:text-red-100 hover:border-red-300">Shutdown</button>
           <button id="restartBtn"
-            class="w-full py-2 px-4 border border-dotted rounded-xl transition-all duration-200 text-sm bg-white/5 hover:bg-white/10 backdrop-blur-sm border-yellow-400 text-yellow-300 hover:text-yellow-100 hover:border-yellow-300">Restart</button>
+            class="w-full py-2 px-4 border border-dotted rounded-xl transition-all duration-200 text-sm bg-black/40 hover:bg-black/50 backdrop-blur-sm border-yellow-400 text-yellow-300 hover:text-yellow-100 hover:border-yellow-300">Restart</button>
           <button id="reloadBtn"
-            class="w-full py-2 px-4 border border-dotted rounded-xl transition-all duration-200 text-sm bg-white/5 hover:bg-white/10 backdrop-blur-sm border-green-400 text-green-300 hover:text-green-100 hover:border-green-300">Reload</button>
+            class="w-full py-2 px-4 border border-dotted rounded-xl transition-all duration-200 text-sm bg-black/40 hover:bg-black/50 backdrop-blur-sm border-green-400 text-green-300 hover:text-green-100 hover:border-green-300">Reload</button>
           <button id="cancelBtn"
-            class="w-full py-2 px-4 border border-dotted rounded-xl transition-all duration-200 text-sm bg-white/5 hover:bg-white/10 backdrop-blur-sm border-white/40 text-white hover:text-white hover:border-white/80">Cancel</button>
+            class="w-full py-2 px-4 border border-dotted rounded-xl transition-all duration-200 text-sm bg-black/40 hover:bg-black/50 backdrop-blur-sm border-white/40 text-white hover:text-white hover:border-white/80">Cancel</button>
         </div>
       </div>
     </div>
