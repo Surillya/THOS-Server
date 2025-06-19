@@ -307,7 +307,7 @@
           </div>
 
           <div class="grid grid-cols-3 gap-3 p-2 flex flex-col justify-between">
-            <button onclick="openApp('explorer.php', 'Explorer')" title="File Explorer"
+            <button onclick="openApp('explorer.html', 'Explorer')" title="File Explorer"
               class="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition-all">
               <svg class="w-6 h-6 text-blue-300 mx-auto" fill="none" stroke="currentColor" stroke-width="2"
                 viewBox="0 0 24 24">

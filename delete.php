@@ -1,38 +1,41 @@
 <?php
-$rootDir = realpath("/home/surillya/");
+header('Content-Type: application/json');
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    echo json_encode(['success' => false, 'error' => 'Invalid request method']);
+    exit;
+}
+
 $data = json_decode(file_get_contents('php://input'), true);
 
-if (empty($data['path'])) {
-    echo json_encode(['success' => false, 'error' => 'Missing path']);
+$path = $_SERVER['DOCUMENT_ROOT'] . '/' . $data['path'];
+
+if (!file_exists($path)) {
+    echo json_encode(['success' => false, 'error' => 'File/folder does not exist']);
     exit;
 }
 
-// Resolve path properly
-$delFullPath = realpath($rootDir . '/' . ltrim($data['path'], '/'));
-
-// Validate path
-if (!$delFullPath || strpos($delFullPath, $rootDir) !== 0) {
-    echo json_encode(['success' => false, 'error' => 'Invalid path']);
-    exit;
-}
-
-// Recursive deletion
-function deleteRecursively($path) {
-    if (is_dir($path)) {
-        $items = scandir($path);
-        foreach ($items as $item) {
-            if ($item === '.' || $item === '..') continue;
-            deleteRecursively($path . DIRECTORY_SEPARATOR . $item);
-        }
-        return rmdir($path);
-    } elseif (is_file($path)) {
-        return unlink($path);
-    }
-    return false;
-}
-
-if (deleteRecursively($delFullPath)) {
-    echo json_encode(['success' => true]);
+// Check if it's a directory
+if (is_dir($path)) {
+    // Delete recursively
+    deleteDirectory($path);
 } else {
-    echo json_encode(['success' => false, 'error' => 'Delete failed']);
+    unlink($path);
 }
+
+echo json_encode(['success' => true]);
+?>
+
+<?php
+function deleteDirectory($dir) {
+    if (!is_dir($dir)) return;
+
+    $files = scandir($dir);
+    foreach ($files as $file) {
+        if ($file === '.' || $file === '..') continue;
+        $path = $dir . '/' . $file;
+        is_dir($path) ? deleteDirectory($path) : unlink($path);
+    }
+    rmdir($dir);
+}
+?>

@@ -1,16 +1,26 @@
 <?php
-require_once "config.php";
+// vfs.php
+// Must sit in your project root (or adjust the require path below)
+require_once __DIR__ . '/config.php';
 
-// Converts virtual path like "/Documents/file.txt" → real path like "/home/surillya/Documents/file.txt"
+/**
+ * Converts a virtual path ("/Documents/file.txt")
+ * into a real filesystem path under REAL_ROOT.
+ */
 function resolve_path(string $virtualPath): string {
-    $virtualPath = str_replace('..', '', $virtualPath); // prevent traversal
+    // strip any “..” just in case
+    $virtualPath = str_replace('..', '', $virtualPath);
     return rtrim(REAL_ROOT, '/') . '/' . ltrim($virtualPath, '/');
 }
 
-// Converts real path like "/home/surillya/Documents/file.txt" → virtual path like "/Documents/file.txt"
+/**
+ * Converts a real filesystem path back into a virtual one
+ * (so the front-end never sees your real server layout).
+ */
 function virtualize_path(string $realPath): string {
     if (str_starts_with($realPath, REAL_ROOT)) {
         return '/' . ltrim(substr($realPath, strlen(REAL_ROOT)), '/');
     }
-    return $realPath; // fallback, possibly invalid or external
+    // fallback (shouldn’t happen if you always resolve under REAL_ROOT)
+    return $realPath;
 }

@@ -1,14 +1,14 @@
 {
-  "jpg": {"app":"imager.php", "icon":"🖼️"},
-  "jpeg": {"app":"imager.php", "icon":"🖼️"},
-  "png": {"app":"imager.php", "icon":"🖼️"},
-  "gif": {"app":"imager.php", "icon":"🖼️"},
-  "webp": {"app":"imager.php", "icon":"🖼️"},
-  "mp3": {"app":"player.php", "icon":"🎵"},
-  "wav": {"app":"player.php", "icon":"🎵"},
-  "opus": {"app":"player.php", "icon":"🎵"},
-  "m4a": {"app":"player.php", "icon":"🎵"},
-  "thp": {"app":"thp.php", "icon":"📦"},
-  "mp4": {"app":"video.php", "icon":"📽️"},
-  "webm": {"app":"video.php", "icon":"📽️"}
+  "jpg": {"app":"imager.php", "icon":"fa-file-image"},
+  "jpeg": {"app":"imager.php", "icon":"fa-file-image"},
+  "png": {"app":"imager.php", "icon":"fa-file-image"},
+  "gif": {"app":"imager.php", "icon":"fa-file-image"},
+  "webp": {"app":"imager.php", "icon":"fa-file-image"},
+  "mp3": {"app":"player.php", "icon":"fa-file-music"},
+  "wav": {"app":"player.php", "icon":"fa-file-music"},
+  "opus": {"app":"player.php", "icon":"fa-file-music"},
+  "m4a": {"app":"player.php", "icon":"fa-file-music"},
+  "thp": {"app":"thp.php", "icon":"fa-file-archive"},
+  "mp4": {"app":"video.php", "icon":"fa-file-video"},
+  "webm": {"app":"video.php", "icon":"fa-file-video"}
 }

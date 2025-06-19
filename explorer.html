@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Surillya Explorer 2.0</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        body {
+            background: transparent;
+        }
+
+        .panel {
+            backdrop-filter: blur(10px);
+            background: rgba(30, 30, 30, 0.6);
+        }
+    </style>
+</head>
+
+<body class="h-screen overflow-hidden text-gray-200">
+
+    <div id="tabs" class="flex items-center space-x-1 px-4 py-2 bg-transparent panel">
+        <button id="addTab" class="px-2 hover:bg-gray-700 rounded"><i class="fa fa-plus"></i></button>
+    </div>
+
+    <div id="panels" class="flex h-[calc(100%-3rem)] overflow-hidden relative bg-transparent"></div>
+
+    <div id="ctxMenu" class="hidden absolute bg-gray-800 text-sm rounded shadow-lg z-50">
+        <ul>
+            <li data-action="info" class="px-4 py-2 hover:bg-gray-700 cursor-pointer">Show Info</li>
+            <li data-action="rename" class="px-4 py-2 hover:bg-gray-700 cursor-pointer">Rename</li>
+            <li data-action="delete" class="px-4 py-2 hover:bg-gray-700 cursor-pointer">Delete</li>
+            <li data-action="copyBuf" class="px-4 py-2 hover:bg-gray-700 cursor-pointer">Copy (buffer)</li>
+            <li data-action="cutBuf" class="px-4 py-2 hover:bg-gray-700 cursor-pointer">Cut (buffer)</li>
+        </ul>
+    </div>
+
+    <script>
+        // —— State ——
+        let tabs = [];
+        let activeTabId = null;
+        let clipboard = null;
+
+        window.fileAssoc = {};
+        fetch('/file_associations.json')
+            .then(r => r.json()).then(js => window.fileAssoc = js);
+
+        function basename(p) {
+            let f = p.split(/[\\/]/).pop().split(/[?#]/)[0];
+            return f.replace(/\.[^.]+$/, '');
+        }
+        function iconFor(ext, isDir) {
+            if (isDir) return '<i class="fa fa-folder"></i>';
+            let a = window.fileAssoc[ext] || {};
+            return `<i class="fa ${a.icon || 'fa-file'}"></i>`;
+        }
+        async function openFile(vp) {
+            let ext = vp.split('.').pop().toLowerCase(),
+                assoc = window.fileAssoc[ext];
+            if (!assoc) {
+                parent.notify("Explorer", `No app for .${ext}`, { type: 'error', icon: '⚠️', timeout: 3000 });
+                return;
+            }
+            parent.openApp(`${assoc.app}?q=${encodeURIComponent(vp)}`, basename(vp));
+        }
+
+        function newTab(initial = '') {
+            let id = Date.now().toString();
+
+            let btn = document.createElement('button');
+            btn.className = 'tab flex items-center px-3 hover:bg-gray-700 rounded';
+            btn.innerHTML = `<span>${initial || '~'}</span>
+                     <span class="closeTab ml-2 text-xs">&times;</span>`;
+            btn.querySelector('span').onclick = () => activateTab(id);
+            btn.querySelector('.closeTab').onclick = e => {
+                e.stopPropagation();
+                closeTab(id);
+            };
+            document.getElementById('tabs')
+                .insertBefore(btn, document.getElementById('addTab'));
+
+            let panel = document.createElement('div');
+            panel.className = 'panel flex-1 m-2 p-4 flex flex-col overflow-hidden hidden bg-transparent';
+            panel.dataset.id = id;
+            panel.innerHTML = `
+      <div class="flex justify-between mb-2">
+        <div class="flex items-center space-x-2">
+          <button class="navBtn" data-dir="..">&larr;</button>
+          <button class="toggleHidden">.files</button>
+          <button class="pasteBtn px-2 bg-gray-700 text-sm rounded opacity-50 cursor-not-allowed" disabled>
+            Paste
+          </button>
+        </div>
+        <input class="searchBox px-2 bg-transparent rounded" placeholder="Search…"/>
+      </div>
+      <div class="grid grid-cols-4 gap-4 flex-1 overflow-auto fileGrid bg-transparent"></div>`;
+            document.getElementById('panels').append(panel);
+
+            tabs.push({ id, cwd: initial, hidden: false, tabBtn: btn, panelEl: panel });
+            activateTab(id);
+        }
+
+        function activateTab(id) {
+            activeTabId = id;
+            tabs.forEach(t => {
+                t.tabBtn.classList.toggle('bg-gray-600', t.id === id);
+                t.panelEl.classList.toggle('hidden', t.id !== id);
+            });
+            loadDir(id);
+        }
+        function closeTab(id) {
+            let i = tabs.findIndex(t => t.id === id);
+            if (i < 0) return;
+            tabs[i].tabBtn.remove();
+            tabs[i].panelEl.remove();
+            tabs.splice(i, 1);
+            if (activeTabId === id) {
+                if (tabs[i]) activateTab(tabs[i].id);
+                else if (tabs[i - 1]) activateTab(tabs[i - 1].id);
+                else newTab('');
+            }
+        }
+        document.getElementById('addTab').onclick = () => newTab('');
+
+        function loadDir(id, query = '') {
+            let tab = tabs.find(t => t.id === id),
+                dir = tab.cwd,
+                hidden = tab.hidden ? 1 : 0,
+                url = query
+                    ? `/api/search.php?dir=${encodeURIComponent(dir)}&hidden=${hidden}&q=${encodeURIComponent(query)}`
+                    : `/api/list.php?dir=${encodeURIComponent(dir)}&hidden=${hidden}`;
+
+            fetch(url).then(r => r.json()).then(items => {
+                tab.tabBtn.firstChild.textContent = dir ? basename(dir) : '~';
+
+                let grid = tab.panelEl.querySelector('.fileGrid');
+                grid.innerHTML = '';
+                items.forEach(it => {
+                    let card = document.createElement('div');
+                    card.className = 'p-3 bg-gray-700 rounded cursor-pointer flex items-center space-x-2';
+                    card.draggable = true;
+                    card.dataset.virtual = it.virtual;
+                    card.dataset.isdir = it.isDir;
+                    card.innerHTML = `${iconFor(it.ext, it.isDir)}<span class="truncate">${it.name}</span>`;
+
+                    card.ondblclick = () => {
+                        if (it.isDir) {
+                            tab.cwd = it.virtual;
+                            loadDir(id);
+                        } else openFile(it.virtual);
+                    };
+                    card.addEventListener('dragstart', e => {
+                        clipboard = null;    // clear buffer when dragging
+                        e.dataTransfer.setData('text/plain', it.virtual);
+                        e.dataTransfer.effectAllowed = 'move';
+                    });
+                    card.addEventListener('contextmenu', e => {
+                        e.preventDefault();
+                        showContextMenu(e.pageX, e.pageY, card);
+                    });
+                    grid.append(card);
+                });
+
+                let h = tab.panelEl;
+                h.querySelector('.navBtn').onclick = () => {
+                    let parts = tab.cwd.split('/').filter(Boolean);
+                    parts.pop();
+                    tab.cwd = parts.join('/');
+                    loadDir(id);
+                };
+                h.querySelector('.toggleHidden').onclick = () => {
+                    tab.hidden = !tab.hidden;
+                    loadDir(id);
+                };
+                let sb = h.querySelector('.searchBox');
+                sb.oninput = e => loadDir(id, e.target.value);
+
+                let pasteBtn = h.querySelector('.pasteBtn');
+                if (clipboard) {
+                    pasteBtn.disabled = false;
+                    pasteBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    pasteBtn.textContent = `Paste (${clipboard.op})`;
+                } else {
+                    pasteBtn.disabled = true;
+                    pasteBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                    pasteBtn.textContent = 'Paste';
+                }
+                pasteBtn.onclick = () => {
+                    if (!clipboard) return;
+                    apiAction(clipboard.op, clipboard.virtual, tab.cwd, () => {
+                        clipboard = null;
+                        loadDir(id);
+                    });
+                };
+            });
+        }
+
+        let currentCard = null;
+        const ctx = document.getElementById('ctxMenu');
+
+        function showContextMenu(x, y, card) {
+            currentCard = card;
+            ctx.style.left = x + 'px';
+            ctx.style.top = y + 'px';
+            ctx.classList.remove('hidden');
+        }
+        document.addEventListener('click', () => ctx.classList.add('hidden'));
+
+        ctx.querySelectorAll('li').forEach(li => {
+            li.onclick = () => {
+                let act = li.dataset.action,
+                    v = currentCard.dataset.virtual,
+                    isD = currentCard.dataset.isdir === '1';
+
+                switch (act) {
+                    case 'info':
+                        fetch(`/api/info.php?path=${encodeURIComponent(v)}`)
+                            .then(r => r.json())
+                            .then(i => alert(`Name: ${i.name}\nType: ${i.type}\nSize: ${i.size}\nModified: ${i.mtime}`));
+                        break;
+                    case 'rename':
+                        let nn = prompt('Rename to', basename(v));
+                        if (nn && nn !== basename(v)) {
+                            fetch('/api/rename.php', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ old: v, new: nn })
+                            }).then(r => r.json()).then(j => {
+                                if (!j.success) alert('Rename failed: ' + j.error);
+                                else loadDir(activeTabId);
+                            });
+                        }
+                        break;
+                    case 'delete':
+                        if (confirm(`Delete "${basename(v)}"?`)) {
+                            fetch('/api/delete.php', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ path: v })
+                            }).then(r => r.json()).then(j => {
+                                if (!j.success) alert('Delete error: ' + j.error);
+                                else loadDir(activeTabId);
+                            });
+                        }
+                        break;
+                    case 'copyBuf':
+                    case 'cutBuf':
+                        clipboard = {
+                            virtual: v,
+                            isDir: isD,
+                            op: act === 'copyBuf' ? 'copy' : 'move'
+                        };
+                        parent.notify("Explorer", `${act === 'copyBuf' ? 'Copied' : 'Cut'} to buffer`, {
+                            type: 'info', icon: '📋', timeout: 2000
+                        });
+                        loadDir(activeTabId);
+                        break;
+                }
+                ctx.classList.add('hidden');
+            };
+        });
+
+        function apiAction(action, src, dest, cb) {
+            fetch(`/api/${action}.php`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ src, dest })
+            })
+                .then(r => r.json())
+                .then(j => {
+                    if (!j.success) alert(`${action} error: ${j.error}`);
+                    cb();
+                });
+        }
+        
+        newTab('');
+    </script>
+</body>
+
+</html>
