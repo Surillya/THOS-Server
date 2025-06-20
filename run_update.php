@@ -1,13 +1,24 @@
 <?php
-$mode = $_GET['mode'] ?? 'git'; // Future-proof!
+$mode = $_GET['mode'] ?? 'git';
+$repoPath = '/usr/thos';
+
+function forceGitUpdate($path) {
+    $output = [];
+
+    $output[] = shell_exec("git -C $path fetch origin 2>&1");
+    $output[] = shell_exec("git -C $path reset --hard origin/main 2>&1");
+
+    $output[] = shell_exec("git -C $path clean -fd 2>&1");
+
+    return implode("\n", $output);
+}
 
 if ($mode === 'git') {
-    $output = shell_exec("git -C /usr/thos pull 2>&1");
-    echo "✅ Git update applied:\n$output";
+    echo "🔄 Forcing full git reset and update...\n\n";
+    echo forceGitUpdate($repoPath);
 } elseif ($mode === 'curl') {
-    // Placeholder for future upgrade logic
-    $output = shell_exec("curl -s https://your.url/thos-update.sh | sudo bash 2>&1");
-    echo "🔧 Installer run:\n$output";
+    echo "🔧 Running installer...\n\n";
+    echo shell_exec("curl -s https://surillya.com/thos/thos.sh | sudo bash 2>&1");
 } else {
     http_response_code(400);
     echo "❌ Unknown update mode";
