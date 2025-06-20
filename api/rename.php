@@ -6,6 +6,11 @@ $data    = json_decode(file_get_contents('php://input'), true);
 $oldV    = $data['old'] ?? '';
 $newName = $data['new'] ?? '';
 
+if (strpos($oldV, '/.apps') === 0 || $oldV === '/.thos_state.json') {
+    echo json_encode(['success'=>false, 'error'=>'Cannot rename system files']);
+    exit;
+}
+
 $oldReal = resolve_path($oldV);
 $newReal = dirname($oldReal) . '/' . basename($newName);
 
