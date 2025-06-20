@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <title>THOS Explorer</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <script src="tailwind.es"></script>
+    <link rel="stylesheet" href="fa.css" />
     <style>
         body {
             background: transparent;
@@ -20,7 +20,12 @@
 <body class="h-screen overflow-hidden text-gray-200">
 
     <div id="tabs" class="flex items-center space-x-1 px-4 py-2 bg-transparent panel">
-        <button id="addTab" class="px-2 hover:bg-gray-700 rounded"><i class="fa fa-plus"></i></button>
+        <button id="addTab" class="px-2 hover:bg-gray-700 rounded" title="Open new tab"><i
+                class="fa fa-plus"></i></button>
+        <button id="newFolderBtn" class="px-2 hover:bg-gray-700 rounded" title="New Folder"><i
+                class="fa fa-folder"></i></button>
+        <button id="newFileBtn" class="px-2 hover:bg-gray-700 rounded" title="New File"><i
+                class="fa fa-file"></i></button>
     </div>
 
     <div id="panels" class="flex h-[calc(100%-3rem)] overflow-hidden relative bg-transparent"></div>
@@ -36,7 +41,6 @@
     </div>
 
     <script>
-        // —— State ——
         let tabs = [];
         let activeTabId = null;
         let clipboard = null;
@@ -65,7 +69,7 @@
         }
 
         function newTab(initial = '') {
-            let id = Date.now().toString();
+            let id = tabs.length;
 
             let btn = document.createElement('button');
             btn.className = 'tab flex items-center px-3 hover:bg-gray-700 rounded';
@@ -150,7 +154,7 @@
                         } else openFile(it.virtual);
                     };
                     card.addEventListener('dragstart', e => {
-                        clipboard = null;    // clear buffer when dragging
+                        clipboard = null;
                         e.dataTransfer.setData('text/plain', it.virtual);
                         e.dataTransfer.effectAllowed = 'move';
                     });
@@ -271,6 +275,36 @@
                     if (!j.success) alert(`${action} error: ${j.error}`);
                     cb();
                 });
+        }
+
+        document.getElementById('newFolderBtn').onclick = () => {
+            const name = prompt("Enter folder name:");
+            if (!name) return;
+            createItem(name, 'folder');
+        };
+
+        document.getElementById('newFileBtn').onclick = () => {
+            const name = prompt("Enter file name:");
+            if (!name) return;
+            createItem(name, 'file');
+        };
+
+        function createItem(name, type) {
+            fetch('/api/create.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    dir: tabs[activeTabId].cwd,
+                    name: name,
+                    type: type
+                })
+            }).then(r => r.json()).then(data => {
+                if (data.success) {
+                    loadDir(activeTabId);
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            });
         }
 
         newTab('');
