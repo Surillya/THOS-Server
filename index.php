@@ -412,7 +412,7 @@ if (!$state || !isset($state['localData']) || !json_decode($state['localData'], 
 
   <script>
     window.THOS = {
-      version: '6 Build-30'
+      version: '6 Build-31'
     };
 
     let timeoutSeconds = 180;
