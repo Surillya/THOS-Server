@@ -300,15 +300,41 @@ if (!$state || !isset($state['localData']) || !json_decode($state['localData'], 
     <div id="bg-image" class="fixed inset-0 z-[-10] bg-cover bg-center transition-all duration-300"></div>
     <div id="app-bar" class="bg-[#1e1e1e] fixed top-0 left-0 w-52 h-screen p-2.5 z-50">
       <div class="flex flex-col h-full">
-        <div class="relative mb-4">
-          <button id="powerButton" class="group relative transition duration-300">
+        <div class="flex items-start mb-4 gap-2">
+          <button id="powerButton" class="group transition duration-300">
             <img src="THOS.png" alt="Power" class="w-12 h-12 transition-all duration-300 ease-in-out
-           group-hover:brightness-125
-           group-hover:scale-110
-           group-hover:drop-shadow-[0_0_10px_rgba(255,200,255,0.6)]
-           group-hover:saturate-150
-           cursor-pointer select-none">
+     group-hover:brightness-125
+     group-hover:scale-110
+     group-hover:drop-shadow-[0_0_10px_rgba(255,200,255,0.6)]
+     group-hover:saturate-150
+     cursor-pointer select-none">
           </button>
+
+          <div id="icon-tray" class="grid grid-cols-4 grid-rows-2 gap-1 pt-1">
+            <button id="wifi-toggle" class="group p-1 hover:bg-[#2e2e2e] rounded-md" title="Wi-Fi">
+              <svg class="w-5 h-5 text-gray-300 group-hover:text-blue-400 transition-all" viewBox="0 0 24 24"
+                fill="currentColor">
+                <path
+                  d="M12 18c.552 0 1 .448 1 1s-.448 1-1 1-1-.448-1-1 .448-1 1-1zm0-2c1.104 0 2 .896 2 2s-.896 2-2 2-2-.896-2-2 .896-2 2-2zm0-3.75a7.25 7.25 0 0 1 5.12 2.13.75.75 0 1 0 1.06-1.06 8.75 8.75 0 0 0-12.36 0 .75.75 0 1 0 1.06 1.06A7.25 7.25 0 0 1 12 12.25zm0-3.5a10.75 10.75 0 0 1 7.6 3.15.75.75 0 1 0 1.06-1.06 12.25 12.25 0 0 0-17.32 0 .75.75 0 0 0 1.06 1.06A10.75 10.75 0 0 1 12 8.75z" />
+              </svg>
+            </button>
+            <!-- Don't work for no reason -->
+            <!-- <button id="volume-toggle" class="group p-1 hover:bg-[#2e2e2e] rounded-md" title="Volume">
+              <svg class="w-6 h-6 text-gray-300 group-hover:text-green-400 transition-all" viewBox="0 0 24 24"
+                fill="currentColor">
+                <path d="M5 9v6h4l5 5V4l-5 5H5z" />
+                <path d="M16.5 12a4.5 4.5 0 0 0-1.5-3.36v6.72A4.5 4.5 0 0 0 16.5 12z" />
+              </svg>
+            </button>
+
+            <button id="brightness-toggle" class="group p-1 hover:bg-[#2e2e2e] rounded-md" title="Brightness">
+              <svg class="w-6 h-6 text-gray-300 group-hover:text-yellow-400 transition-all" viewBox="0 0 24 24"
+                fill="currentColor">
+                <path
+                  d="M12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12zm0-16v2m0 16v2m8-10h2M2 12H0m17.66 6.34l1.41 1.41M4.93 4.93l1.41 1.41m0 12.73l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+              </svg>
+            </button> -->
+          </div>
         </div>
 
         <div class="grid grid-cols-3 gap-3 p-2 flex flex-col justify-between">
@@ -392,6 +418,29 @@ if (!$state || !isset($state['localData']) || !json_decode($state['localData'], 
     <iframe id="screensaver" src="screensaver.html"></iframe>
 
     <div id="drag-overlay"></div>
+
+    <div id="wifi-dropdown"
+      class="hidden absolute left-[220px] top-[60px] w-64 bg-[#1f1f1f] text-white rounded shadow-xl z-[999] p-3 border border-gray-700">
+      <div id="wifi-list" class="max-h-60 overflow-y-auto text-sm">Loading networks...</div>
+      <div id="wifi-connect" class="hidden mt-3">
+        <input type="password" id="wifi-pass" placeholder="Wi-Fi Password"
+          class="w-full p-1 mb-2 bg-[#2a2a2a] border border-gray-600 rounded text-white placeholder-gray-400" />
+        <button id="connect-btn"
+          class="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm p-1 rounded">Connect</button>
+      </div>
+    </div>
+
+    <div id="volume-control"
+      class="hidden absolute left-[220px] top-[100px] w-48 bg-[#1f1f1f] text-white rounded p-3 shadow-lg z-[999] border border-gray-700">
+      <label class="text-sm block mb-1">Volume</label>
+      <input type="range" min="0" max="100" id="volume-slider" class="w-full">
+    </div>
+
+    <div id="brightness-control"
+      class="hidden absolute left-[220px] top-[160px] w-48 bg-[#1f1f1f] text-white rounded p-3 shadow-lg z-[999] border border-gray-700">
+      <label class="text-sm block mb-1">Brightness</label>
+      <input type="range" min="10" max="100" id="brightness-slider" class="w-full">
+    </div>
   </div>
 
   <div id="powerDialog" class="fixed inset-0 z-50 hidden flex items-center justify-center">
@@ -412,7 +461,7 @@ if (!$state || !isset($state['localData']) || !json_decode($state['localData'], 
 
   <script>
     window.THOS = {
-      version: '6 Build-33'
+      version: '6 Build-34'
     };
 
     let timeoutSeconds = 180;
@@ -599,7 +648,12 @@ if (!$state || !isset($state['localData']) || !json_decode($state['localData'], 
     contextMenu.style.zIndex = '9999';
     document.body.appendChild(contextMenu);
 
-    document.addEventListener('click', () => contextMenu.style.display = 'none');
+    document.addEventListener('click', (e) => {
+      contextMenu.style.display = 'none';
+      if (!wifiDropdown.contains(e.target) && !wifiToggle.contains(e.target)) {
+        wifiDropdown.classList.add('hidden');
+      }
+    });
 
     async function loadApps() {
       const res = await fetch('apps.php');
@@ -978,6 +1032,133 @@ if (!$state || !isset($state['localData']) || !json_decode($state['localData'], 
     }
 
     window.notify = notify;
+
+    const wifiToggle = document.getElementById('wifi-toggle');
+    const wifiDropdown = document.getElementById('wifi-dropdown');
+    const wifiList = document.getElementById('wifi-list');
+    const wifiConnect = document.getElementById('wifi-connect');
+    const wifiPass = document.getElementById('wifi-pass');
+    const connectBtn = document.getElementById('connect-btn');
+
+    let selectedSSID = null;
+
+    wifiToggle.addEventListener('click', () => {
+      wifiDropdown.classList.toggle('hidden');
+      wifiPass.value = '';
+      wifiConnect.classList.add('hidden');
+      selectedSSID = null;
+
+      fetch('wifi_list.php')
+        .then(res => res.json())
+        .then(ssids => {
+          wifiList.innerHTML = '';
+          if (!ssids.length) {
+            wifiList.innerHTML = '<div class="text-gray-400 italic">No networks found</div>';
+            return;
+          }
+
+          ssids.forEach(ssid => {
+            const div = document.createElement('div');
+            div.textContent = ssid || '(Hidden)';
+            div.className = 'cursor-pointer px-2 py-1 hover:bg-[#333] rounded';
+            div.onclick = () => {
+              selectedSSID = ssid;
+              wifiConnect.classList.remove('hidden');
+            };
+            wifiList.appendChild(div);
+          });
+        })
+        .catch(err => {
+          wifiList.innerHTML = '<div class="text-red-400">Failed to load networks</div>';
+          notify("Wi-Fi", "Could not fetch network list.", {
+            type: "error",
+            icon: "📡",
+          });
+        });
+    });
+
+    connectBtn.addEventListener('click', () => {
+      const pass = wifiPass.value;
+      if (!selectedSSID || !pass) {
+        notify("MWi-Fi", "Please select a network and enter a password.", {
+          type: "warning",
+          icon: "⚠️"
+        });
+        return;
+      }
+
+      fetch(`connect_wifi.php?ssid=${encodeURIComponent(selectedSSID)}&pass=${encodeURIComponent(pass)}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            notify("Wi-Fi", `You are now connected to "${selectedSSID}"`, {
+              type: "success",
+              icon: "✅"
+            });
+            wifiDropdown.classList.add('hidden');
+          } else {
+            notify("Wi-Fi", data.error || "Could not connect to the network.", {
+              type: "error",
+              icon: "❌"
+            });
+          }
+        })
+        .catch(() => {
+          notify("Wi-Fi", "Could not communicate with the server.", {
+            type: "error",
+            icon: "💥"
+          });
+        });
+    });
+
+    const volumeToggle = document.getElementById("volume-toggle");
+    const volumeControl = document.getElementById("volume-control");
+    const volumeSlider = document.getElementById("volume-slider");
+
+    const brightnessToggle = document.getElementById("brightness-toggle");
+    const brightnessControl = document.getElementById("brightness-control");
+    const brightnessSlider = document.getElementById("brightness-slider");
+
+    // Toggle panels
+    volumeToggle.onclick = () => {
+      volumeControl.classList.toggle("hidden");
+      brightnessControl.classList.add("hidden");
+      wifiDropdown.classList.add("hidden");
+    };
+
+    brightnessToggle.onclick = () => {
+      brightnessControl.classList.toggle("hidden");
+      volumeControl.classList.add("hidden");
+      wifiDropdown.classList.add("hidden");
+    };
+
+    // Volume logic
+    volumeSlider.oninput = () => {
+      fetch(`api/set_volume.php?level=${volumeSlider.value}`)
+        .then(r => r.json())
+        .then(res => {
+          if (!res.success) {
+            notify("Volume", res.error || "Your system may not be set up correctly", {
+              type: "error",
+              icon: "❌"
+            });
+          }
+        });
+    };
+
+    // Brightness logic
+    brightnessSlider.oninput = () => {
+      fetch(`api/set_brightness.php?level=${brightnessSlider.value}`)
+        .then(r => r.json())
+        .then(res => {
+          if (!res.success) {
+            notify("Brightness", res.error || "Your system may not be set up correctly", {
+              type: "error",
+              icon: "❌"
+            });
+          }
+        });
+    };
   </script>
 </body>
 
