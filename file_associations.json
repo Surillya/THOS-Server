@@ -4,11 +4,11 @@
   "png": {"app":"imager.php", "icon":"fa-file-image"},
   "gif": {"app":"imager.php", "icon":"fa-file-image"},
   "webp": {"app":"imager.php", "icon":"fa-file-image"},
-  "mp3": {"app":"player.php", "icon":"fa-file-music"},
-  "wav": {"app":"player.php", "icon":"fa-file-music"},
-  "opus": {"app":"player.php", "icon":"fa-file-music"},
-  "m4a": {"app":"player.php", "icon":"fa-file-music"},
-  "thp": {"app":"thp.php", "icon":"fa-file-archive"},
-  "mp4": {"app":"video.php", "icon":"fa-file-video"},
-  "webm": {"app":"video.php", "icon":"fa-file-video"}
+  "mp3": {"app":"player.php", "icon":"fa-music"},
+  "wav": {"app":"player.php", "icon":"fa-music"},
+  "opus": {"app":"player.php", "icon":"fa-music"},
+  "m4a": {"app":"player.php", "icon":"fa-music"},
+  "thp": {"app":"thp.php", "icon":"fa-cube"},
+  "mp4": {"app":"video.php", "icon":"fa-video"},
+  "webm": {"app":"video.php", "icon":"fa-video"}
 }
