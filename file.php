@@ -1,5 +1,5 @@
 <?php
-$rootDir = realpath("/home/surillya");
+$rootDir = realpath("/root");
 
 $query = $_GET['q'] ?? '';
 

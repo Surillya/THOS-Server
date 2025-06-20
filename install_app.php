@@ -15,10 +15,10 @@ if (!preg_match('/^https:\/\/surillya\.com\//', $url)) {
     $verified = 0;
 }
 
-$targetPath = '/home/surillya/.temp/' . basename($output);
+$targetPath = '/root/.temp/' . basename($output);
 
-if (!is_dir("/home/surillya/.temp/")){
-    if (!mkdir("/home/surillya/.temp/", 0755, true)){
+if (!is_dir("/root/.temp/")){
+    if (!mkdir("/root/.temp/", 0755, true)){
         fail("Failed to create temporary download directory.");
     }
 }

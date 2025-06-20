@@ -1,5 +1,5 @@
 <?php
-$appsDir = "/home/surillya/.apps/";
+$appsDir = "/root/.apps/";
 $symlinkPath = "/usr/thos/apps";
 $apps = [];
 

@@ -17,7 +17,7 @@
     <h1 class="text-3xl font-bold text-pink-400 mb-6">Wallpaper Picker</h1>
     <div id="wallpapers" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
       <?php
-      $wallpaperDir = "/home/surillya/Pictures/";
+      $wallpaperDir = "/root/Pictures/";
       $images = glob($wallpaperDir . "*.{jpg,jpeg,png,gif,webp}", GLOB_BRACE);
       foreach ($images as $img) {
         require_once "vfs.php";

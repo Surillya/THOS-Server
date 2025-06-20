@@ -1,5 +1,5 @@
 <?php
-define('THOS_STATE_FILE', '/home/surillya/.thos_state.json');
+define('THOS_STATE_FILE', '/root/.thos_state.json');
 
 function thos_load_state() {
     if (!file_exists(THOS_STATE_FILE)) return null;
