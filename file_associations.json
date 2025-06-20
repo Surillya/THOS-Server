@@ -8,6 +8,8 @@
   "wav": {"app":"player.php", "icon":"fa-music"},
   "opus": {"app":"player.php", "icon":"fa-music"},
   "m4a": {"app":"player.php", "icon":"fa-music"},
+  "ogg": {"app":"player.php", "icon":"fa-music"},
+  "flac": {"app":"player.php", "icon":"fa-music"},
   "thp": {"app":"thp.php", "icon":"fa-cube"},
   "mp4": {"app":"video.php", "icon":"fa-video"},
   "webm": {"app":"video.php", "icon":"fa-video"}
