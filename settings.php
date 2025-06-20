@@ -85,6 +85,19 @@
                             <option value="never">Never</option>
                         </select>
                     </div>
+                    <div class="mt-6">
+                        <label class="block text-sm text-gray-300 mb-2">System Update</label>
+                        <button id="update-btn" type="button" onclick="checkOrInstallUpdate()"
+                            class="w-full bg-gray-800 text-white border border-gray-700 hover:bg-gray-700 font-medium px-4 py-2 rounded-lg transition flex items-center justify-between">
+                            <span id="update-button-label">Check for Updates</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-400" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M5 13l4 4L19 7" />
+                            </svg>
+                        </button>
+                        <p id="update-status" class="text-xs text-gray-400 mt-2 whitespace-pre-wrap"></p>
+                    </div>
                     <!-- Will eventually actually add this, but requires stuff in .xinitrc and really don't want to do it rn -->
                     <!-- <div>
                         <label for="powerMode" class="block text-sm text-gray-300 mb-2">Power Mode</label>
@@ -175,6 +188,66 @@
                 await window.parent.saveTHOSState();
                 location.reload();
             }
+        }
+
+        let updatePending = false;
+        let pendingUpdateCount = 0;
+
+        function checkOrInstallUpdate() {
+            if (updatePending) {
+                installUpdate(); // Confirmed
+                return;
+            }
+
+            const label = document.getElementById("update-button-label");
+            const status = document.getElementById("update-status");
+            const button = document.getElementById("update-btn");
+
+            label.textContent = "Checking...";
+            status.textContent = "";
+
+            fetch("check_update.php")
+                .then(res => res.json())
+                .then(data => {
+                    if (data.upToDate) {
+                        label.textContent = "System is Up To Date";
+                        status.textContent = "✅ You're running the latest version of THOS.";
+                    } else {
+                        updatePending = true;
+                        pendingUpdateCount = data.updates;
+                        label.textContent = `⬇️ ${data.updates} update(s) available. Click to update.`;
+                        button.classList.replace("bg-gray-800", "bg-yellow-800");
+                        button.classList.replace("hover:bg-gray-700", "hover:bg-yellow-700");
+                        status.textContent = "Updates detected. Click again to confirm and install.";
+                    }
+                })
+                .catch(err => {
+                    label.textContent = "Check for Updates";
+                    status.textContent = "❌ Update check failed.";
+                });
+        }
+
+        function installUpdate() {
+            const label = document.getElementById("update-button-label");
+            const status = document.getElementById("update-status");
+            const button = document.getElementById("update-btn");
+
+            label.textContent = "Installing...";
+            status.textContent = "⏳ Applying updates, please wait...";
+
+            fetch("run_update.php")
+                .then(res => res.text())
+                .then(output => {
+                    label.textContent = "✅ Update Applied";
+                    status.textContent = "THOS is now up to date!\n\n" + output;
+                    button.classList.replace("bg-yellow-800", "bg-green-800");
+                    button.classList.replace("hover:bg-yellow-700", "hover:bg-green-700");
+                    updatePending = false;
+                })
+                .catch(() => {
+                    label.textContent = "❌ Update Failed";
+                    status.textContent = "Please try again or check your network.";
+                });
         }
     </script>
 </body>

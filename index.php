@@ -1,575 +1,501 @@
-<img?php $statePath='/home/surillya/.thos_state.json' ; $state=file_exists($statePath) ?
-  json_decode(file_get_contents($statePath), true) : null; if (!file_exists($statePath)) { header('Location: oobe.php');
-  exit(); } ?>
-  <!DOCTYPE html>
-  <html lang="en">
+<?php
+require_once('state.php');
+$state = thos_load_state();
+if (!$state || !isset($state['localData']) || !json_decode($state['localData'], true)['thos_done']) {
+  header('Location: oobe.php');
+  exit();
+}
+?>
+<!DOCTYPE html>
+<html lang="en">
 
-  <head>
-    <meta charset="UTF-8">
-    <title>THOS</title>
-    <style>
-      :root {
-        --accent: #4CAF50;
-        --window-bg: rgba(28, 28, 28, 0.6);
-        --window-border: rgba(255, 255, 255, 0.1);
-        --window-blur: blur(20px);
-        --header-bg: rgba(30, 30, 30, 0.6);
-        --header-color: white;
-        --header-hover: var(--accent);
+<head>
+  <meta charset="UTF-8">
+  <title>THOS</title>
+  <style>
+    :root {
+      --accent: #4CAF50;
+      --window-bg: rgba(28, 28, 28, 0.6);
+      --window-border: rgba(255, 255, 255, 0.1);
+      --window-blur: blur(20px);
+      --header-bg: rgba(30, 30, 30, 0.6);
+      --header-color: white;
+      --header-hover: var(--accent);
+    }
+
+    .theme-glassy-dark {
+      --window-bg: rgba(28, 28, 28, 0.6);
+      --window-border: rgba(255, 255, 255, 0.1);
+      --window-blur: blur(20px);
+      --header-bg: rgba(30, 30, 30, 0.6);
+      --header-color: white;
+      --font-color: white;
+    }
+
+    .theme-frosted-blue {
+      --window-bg: rgba(0, 40, 80, 0.4);
+      --window-border: rgba(173, 216, 230, 0.2);
+      --window-blur: blur(25px);
+      --header-bg: rgba(10, 20, 50, 0.4);
+      --header-color: #e3f8ff;
+      --font-color: #e3f8ff;
+    }
+
+    .theme-dreamy-pink {
+      --window-bg: rgba(80, 30, 60, 0.5);
+      --window-border: rgba(255, 182, 193, 0.3);
+      --window-blur: blur(16px);
+      --header-bg: rgba(100, 40, 80, 0.5);
+      --header-color: #ffddee;
+      --font-color: #ffe9f4;
+    }
+
+    .theme-xp {
+      --window-bg: #ece9d8;
+      --window-border: #3a6ea5;
+      --window-blur: none;
+      --header-bg: linear-gradient(to bottom, #0a246a, #1c4dbd);
+      --header-color: white;
+      --font-color: black;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: #121212;
+      color: white;
+      overflow: hidden;
+    }
+
+    #app-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 200px;
+      height: 100vh;
+      background: var(--window-bg);
+      backdrop-filter: var(--window-blur);
+      -webkit-backdrop-filter: var(--window-blur);
+      border: 1px solid var(--window-border);
+      padding: 10px;
+      box-sizing: border-box;
+      z-index: 9999;
+    }
+
+    .app-btn {
+      display: block;
+      margin: 10px 0;
+      padding: 10px;
+      background: #292929;
+      border: none;
+      color: white;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: background 0.3s ease;
+    }
+
+    .app-btn:hover {
+      background: var(--accent);
+    }
+
+    .window {
+      position: absolute;
+      width: 600px;
+      height: 400px;
+      background: var(--window-bg);
+      backdrop-filter: var(--window-blur);
+      -webkit-backdrop-filter: var(--window-blur);
+      border: 1px solid var(--window-border);
+      border-radius: 12px;
+      resize: both;
+      overflow: hidden;
+      z-index: 1;
+      transition: box-shadow 0.2s ease, backdrop-filter 0.3s ease;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    }
+
+
+    .window.active {
+      box-shadow: 0 0 20px var(--accent), 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+
+    .window-header {
+      background: var(--header-bg);
+      color: var(--header-color);
+      padding: 6px 12px;
+      cursor: grab;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-weight: bold;
+      backdrop-filter: var(--window-blur);
+      -webkit-backdrop-filter: var(--window-blur);
+      border-bottom: 1px solid var(--window-border);
+    }
+
+    .window-header:active {
+      cursor: grabbing;
+    }
+
+
+    .window-header button {
+      background: transparent;
+      border: none;
+      color: inherit;
+      font-weight: bold;
+      font-size: 1.1em;
+      cursor: pointer;
+      user-select: none;
+      padding: 0 6px;
+      transition: color 0.2s ease;
+    }
+
+    .window-header button:hover {
+      color: var(--header-hover);
+    }
+
+
+    .window-content {
+      background: var(--window-bg);
+      backdrop-filter: var(--window-blur);
+      -webkit-backdrop-filter: var(--window-blur);
+      border: 1px solid var(--window-border);
+      width: 100%;
+      height: calc(100% - 32px);
+      border: none;
+    }
+
+    .sparkle {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      background: radial-gradient(circle at center, var(--accent) 0%, transparent 70%);
+      border-radius: 50%;
+      filter: drop-shadow(0 0 6px var(--accent));
+      animation: sparkle 1.2s infinite ease-in-out;
+      pointer-events: none;
+    }
+
+    @keyframes sparkle {
+
+      0%,
+      100% {
+        opacity: 0;
+        transform: scale(0.5) rotate(0deg);
       }
 
-      .theme-glassy-dark {
-        --window-bg: rgba(28, 28, 28, 0.6);
-        --window-border: rgba(255, 255, 255, 0.1);
-        --window-blur: blur(20px);
-        --header-bg: rgba(30, 30, 30, 0.6);
-        --header-color: white;
-        --font-color: white;
+      50% {
+        opacity: 1;
+        transform: scale(1) rotate(45deg);
+      }
+    }
+
+    #screensaver {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      border: none;
+      z-index: 9999;
+    }
+
+    #drag-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 99999;
+      display: none;
+      cursor: grabbing;
+    }
+
+    #fullscreen-toggle {
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      backdrop-filter: blur(2px);
+      -webkit-backdrop-filter: blur(2px);
+      border-radius: 4px;
+    }
+
+    #fullscreen-toggle:hover {
+      color: var(--accent);
+    }
+
+    .grayscale-bg {
+      filter: grayscale(100%) brightness(0.9);
+    }
+
+    .notification {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      padding: 1rem 1.25rem;
+      border-radius: 1rem;
+      border: 2px solid transparent;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      color: white;
+      min-width: 260px;
+      max-width: 340px;
+      pointer-events: auto;
+      animation: fadeInUp 0.3s ease-out;
+      position: relative;
+      transition: transform 0.2s ease, opacity 0.2s ease;
+      background: var(--window-bg);
+      backdrop-filter: var(--window-blur);
+      -webkit-backdrop-filter: var(--window-blur);
+      color: var(--accent);
+    }
+
+    .notification-dismiss {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+    }
+
+    .notification.success {
+      border-color: #4caf50;
+    }
+
+    .notification.error {
+      border-color: #f44336;
+    }
+
+    .notification.info {
+      border-color: var(--accent, #00bcd4);
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%) scale(0.95);
+        opacity: 0;
       }
 
-      .theme-frosted-blue {
-        --window-bg: rgba(0, 40, 80, 0.4);
-        --window-border: rgba(173, 216, 230, 0.2);
-        --window-blur: blur(25px);
-        --header-bg: rgba(10, 20, 50, 0.4);
-        --header-color: #e3f8ff;
-        --font-color: #e3f8ff;
+      to {
+        transform: translateX(0) scale(1);
+        opacity: 1;
+      }
+    }
+
+    @keyframes fadeOut {
+      from {
+        opacity: 1;
+        transform: translateX(0) scale(1);
       }
 
-      .theme-dreamy-pink {
-        --window-bg: rgba(80, 30, 60, 0.5);
-        --window-border: rgba(255, 182, 193, 0.3);
-        --window-blur: blur(16px);
-        --header-bg: rgba(100, 40, 80, 0.5);
-        --header-color: #ffddee;
-        --font-color: #ffe9f4;
+      to {
+        opacity: 0;
+        transform: translateX(50%) scale(0.95);
       }
+    }
+  </style>
+  <script src="tailwind.es"></script>
+</head>
 
-      .theme-xp {
-        --window-bg: #ece9d8;
-        --window-border: #3a6ea5;
-        --window-blur: none;
-        --header-bg: linear-gradient(to bottom, #0a246a, #1c4dbd);
-        --header-color: white;
-        --font-color: black;
-      }
-
-      body {
-        margin: 0;
-        font-family: 'Inter', sans-serif;
-        background: #121212;
-        color: white;
-        overflow: hidden;
-      }
-
-      #app-bar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 200px;
-        height: 100vh;
-        background: var(--window-bg);
-        backdrop-filter: var(--window-blur);
-        -webkit-backdrop-filter: var(--window-blur);
-        border: 1px solid var(--window-border);
-        padding: 10px;
-        box-sizing: border-box;
-        z-index: 9999;
-      }
-
-      .app-btn {
-        display: block;
-        margin: 10px 0;
-        padding: 10px;
-        background: #292929;
-        border: none;
-        color: white;
-        cursor: pointer;
-        border-radius: 8px;
-        transition: background 0.3s ease;
-      }
-
-      .app-btn:hover {
-        background: var(--accent);
-      }
-
-      .window {
-        position: absolute;
-        width: 600px;
-        height: 400px;
-        background: var(--window-bg);
-        backdrop-filter: var(--window-blur);
-        -webkit-backdrop-filter: var(--window-blur);
-        border: 1px solid var(--window-border);
-        border-radius: 12px;
-        resize: both;
-        overflow: hidden;
-        z-index: 1;
-        transition: box-shadow 0.2s ease, backdrop-filter 0.3s ease;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
-      }
-
-
-      .window.active {
-        box-shadow: 0 0 20px var(--accent), 0 8px 24px rgba(0, 0, 0, 0.3);
-      }
-
-      .window-header {
-        background: var(--header-bg);
-        color: var(--header-color);
-        padding: 6px 12px;
-        cursor: grab;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        font-weight: bold;
-        backdrop-filter: var(--window-blur);
-        -webkit-backdrop-filter: var(--window-blur);
-        border-bottom: 1px solid var(--window-border);
-      }
-
-      .window-header:active {
-        cursor: grabbing;
-      }
-
-
-      .window-header button {
-        background: transparent;
-        border: none;
-        color: inherit;
-        font-weight: bold;
-        font-size: 1.1em;
-        cursor: pointer;
-        user-select: none;
-        padding: 0 6px;
-        transition: color 0.2s ease;
-      }
-
-      .window-header button:hover {
-        color: var(--header-hover);
-      }
-
-
-      .window-content {
-        background: var(--window-bg);
-        backdrop-filter: var(--window-blur);
-        -webkit-backdrop-filter: var(--window-blur);
-        border: 1px solid var(--window-border);
-        width: 100%;
-        height: calc(100% - 32px);
-        border: none;
-      }
-
-      .sparkle {
-        position: absolute;
-        width: 6px;
-        height: 6px;
-        background: radial-gradient(circle at center, var(--accent) 0%, transparent 70%);
-        border-radius: 50%;
-        filter: drop-shadow(0 0 6px var(--accent));
-        animation: sparkle 1.2s infinite ease-in-out;
-        pointer-events: none;
-      }
-
-      @keyframes sparkle {
-
-        0%,
-        100% {
-          opacity: 0;
-          transform: scale(0.5) rotate(0deg);
-        }
-
-        50% {
-          opacity: 1;
-          transform: scale(1) rotate(45deg);
-        }
-      }
-
-      #screensaver {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        border: none;
-        z-index: 9999;
-      }
-
-      #drag-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        z-index: 99999;
-        display: none;
-        cursor: grabbing;
-      }
-
-      #fullscreen-toggle {
-        border: none;
-        background: transparent;
-        cursor: pointer;
-        backdrop-filter: blur(2px);
-        -webkit-backdrop-filter: blur(2px);
-        border-radius: 4px;
-      }
-
-      #fullscreen-toggle:hover {
-        color: var(--accent);
-      }
-
-      .grayscale-bg {
-        filter: grayscale(100%) brightness(0.9);
-      }
-
-      .notification {
-        display: flex;
-        flex-direction: column;
-        gap: 0.25rem;
-        padding: 1rem 1.25rem;
-        border-radius: 1rem;
-        border: 2px solid transparent;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-        color: white;
-        min-width: 260px;
-        max-width: 340px;
-        pointer-events: auto;
-        animation: fadeInUp 0.3s ease-out;
-        position: relative;
-        transition: transform 0.2s ease, opacity 0.2s ease;
-        background: var(--window-bg);
-        backdrop-filter: var(--window-blur);
-        -webkit-backdrop-filter: var(--window-blur);
-        color: var(--accent);
-      }
-
-      .notification-dismiss {
-        background: transparent;
-        border: none;
-        cursor: pointer;
-      }
-
-      .notification.success {
-        border-color: #4caf50;
-      }
-
-      .notification.error {
-        border-color: #f44336;
-      }
-
-      .notification.info {
-        border-color: var(--accent, #00bcd4);
-      }
-
-      @keyframes slideIn {
-        from {
-          transform: translateX(100%) scale(0.95);
-          opacity: 0;
-        }
-
-        to {
-          transform: translateX(0) scale(1);
-          opacity: 1;
-        }
-      }
-
-      @keyframes fadeOut {
-        from {
-          opacity: 1;
-          transform: translateX(0) scale(1);
-        }
-
-        to {
-          opacity: 0;
-          transform: translateX(50%) scale(0.95);
-        }
-      }
-    </style>
-    <script src="tailwind.es"></script>
-  </head>
-
-  <body class="bg-black">
-    <div id="appWrapper" class="transition-all duration-300">
-      <div id="bg-image" class="fixed inset-0 z-[-10] bg-cover bg-center transition-all duration-300"></div>
-      <div id="app-bar" class="bg-[#1e1e1e] fixed top-0 left-0 w-52 h-screen p-2.5 z-50">
-        <div class="flex flex-col h-full">
-          <div class="relative mb-4">
-            <button id="powerButton" class="group relative transition duration-300">
-              <img src="THOS.png" alt="Power" class="w-12 h-12 transition-all duration-300 ease-in-out
+<body class="bg-black">
+  <div id="appWrapper" class="transition-all duration-300">
+    <div id="bg-image" class="fixed inset-0 z-[-10] bg-cover bg-center transition-all duration-300"></div>
+    <div id="app-bar" class="bg-[#1e1e1e] fixed top-0 left-0 w-52 h-screen p-2.5 z-50">
+      <div class="flex flex-col h-full">
+        <div class="relative mb-4">
+          <button id="powerButton" class="group relative transition duration-300">
+            <img src="THOS.png" alt="Power" class="w-12 h-12 transition-all duration-300 ease-in-out
            group-hover:brightness-125
            group-hover:scale-110
            group-hover:drop-shadow-[0_0_10px_rgba(255,200,255,0.6)]
            group-hover:saturate-150
            cursor-pointer select-none">
-            </button>
-          </div>
+          </button>
+        </div>
 
-          <div class="grid grid-cols-3 gap-3 p-2 flex flex-col justify-between">
-            <button onclick="openApp('explorer.html', 'Explorer')" title="File Explorer"
-              class="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition-all">
-              <svg class="w-6 h-6 text-blue-300 mx-auto" fill="none" stroke="currentColor" stroke-width="2"
-                viewBox="0 0 24 24">
-                <path d="M3 7l6-3 6 3 6-3v12l-6 3-6-3-6 3V7z" />
-                <path d="M9 4v12" />
-                <path d="M15 7v12" />
-              </svg>
-            </button>
+        <div class="grid grid-cols-3 gap-3 p-2 flex flex-col justify-between">
+          <button onclick="openApp('explorer.html', 'Explorer')" title="File Explorer"
+            class="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition-all">
+            <svg class="w-6 h-6 text-blue-300 mx-auto" fill="none" stroke="currentColor" stroke-width="2"
+              viewBox="0 0 24 24">
+              <path d="M3 7l6-3 6 3 6-3v12l-6 3-6-3-6 3V7z" />
+              <path d="M9 4v12" />
+              <path d="M15 7v12" />
+            </svg>
+          </button>
 
-            <button onclick="openApp('tasks.php', 'Task Manager')" title="Task Manager"
-              class="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition-all">
-              <svg class="w-6 h-6 text-red-300 mx-auto" fill="none" stroke="currentColor" stroke-width="2"
-                viewBox="0 0 24 24">
-                <rect x="3" y="3" width="7" height="7" rx="1" />
-                <rect x="14" y="3" width="7" height="7" rx="1" />
-                <rect x="3" y="14" width="7" height="7" rx="1" />
-                <rect x="14" y="14" width="7" height="7" rx="1" />
-              </svg>
-            </button>
+          <button onclick="openApp('tasks.php', 'Task Manager')" title="Task Manager"
+            class="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition-all">
+            <svg class="w-6 h-6 text-red-300 mx-auto" fill="none" stroke="currentColor" stroke-width="2"
+              viewBox="0 0 24 24">
+              <rect x="3" y="3" width="7" height="7" rx="1" />
+              <rect x="14" y="3" width="7" height="7" rx="1" />
+              <rect x="3" y="14" width="7" height="7" rx="1" />
+              <rect x="14" y="14" width="7" height="7" rx="1" />
+            </svg>
+          </button>
 
-            <button onclick="openApp('https://surillya.com/thos/store', 'THOS Store')" title="THOS Store"
-              class="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition-all">
-              <svg class="w-6 h-6 text-pink-300 mx-auto" fill="none" stroke="currentColor" stroke-width="2"
-                viewBox="0 0 24 24">
-                <path d="M4 9h16l-1.68 10.08a2 2 0 0 1-2 1.92H7.68a2 2 0 0 1-2-1.92L4 9Z" />
-                <path d="M8 11V8a4 4 0 0 1 8 0v3" />
-              </svg>
-            </button>
+          <button onclick="openApp('https://surillya.com/thos/store', 'THOS Store')" title="THOS Store"
+            class="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition-all">
+            <svg class="w-6 h-6 text-pink-300 mx-auto" fill="none" stroke="currentColor" stroke-width="2"
+              viewBox="0 0 24 24">
+              <path d="M4 9h16l-1.68 10.08a2 2 0 0 1-2 1.92H7.68a2 2 0 0 1-2-1.92L4 9Z" />
+              <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+            </svg>
+          </button>
 
-            <button onclick="openApp('https://surillya.com/thos/search/thossearch.html', 'Internet', true)"
-              title="Internet" class="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition-all">
-              <svg class="w-6 h-6 text-green-300 mx-auto" fill="none" stroke="currentColor" stroke-width="2"
-                viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="10" />
-                <path d="M2 12h20" />
-                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-              </svg>
-            </button>
+          <button onclick="openApp('https://surillya.com/thos/search/thossearch.html', 'Internet', true)"
+            title="Internet" class="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition-all">
+            <svg class="w-6 h-6 text-green-300 mx-auto" fill="none" stroke="currentColor" stroke-width="2"
+              viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M2 12h20" />
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+            </svg>
+          </button>
 
-            <button onclick="openApp('settings.php', 'Settings')" title="Settings"
-              class="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition-all">
-              <svg class="w-6 h-6 text-yellow-300 mx-auto" fill="none" stroke="currentColor" stroke-width="2"
-                viewBox="0 0 24 24">
-                <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" />
-                <path
-                  d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1
+          <button onclick="openApp('settings.php', 'Settings')" title="Settings"
+            class="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition-all">
+            <svg class="w-6 h-6 text-yellow-300 mx-auto" fill="none" stroke="currentColor" stroke-width="2"
+              viewBox="0 0 24 24">
+              <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" />
+              <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1
                   1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0
                   010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65
                   1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0
                   012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65
                   0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" />
-              </svg>
+            </svg>
+          </button>
+        </div>
+
+        <div class="flex-grow"></div>
+
+        <div id="trdp"
+          class="grid grid-cols-2 gap-2 mt-4 p-2 bg-[#252525] rounded-lg overflow-y-auto p-2 justify-center items-center">
+        </div>
+
+        <div id="version-display-container" class="w-full flex justify-center items-center mt-4">
+          <div id="version-display" class="flex items-center gap-2 text-sm text-gray-400 select-none">
+            <button id="fullscreen-toggle" title="Toggle fullscreen"
+              class="text-white hover:text-[var(--accent)] transition-colors duration-200 text-xs p-1 rounded bg-transparent hover:bg-[var(--glass-bg-light)]">
+              ⛶
             </button>
+            <span class="text-[var(--accent)]">THOS</span><span id="version-number"></span>
           </div>
-
-          <div class="flex-grow"></div>
-
-          <div id="trdp"
-            class="grid grid-cols-2 gap-2 mt-4 p-2 bg-[#252525] rounded-lg overflow-y-auto p-2 justify-center items-center">
-          </div>
-
-          <div id="version-display-container" class="w-full flex justify-center items-center mt-4">
-            <div id="version-display" class="flex items-center gap-2 text-sm text-gray-400 select-none">
-              <button id="fullscreen-toggle" title="Toggle fullscreen"
-                class="text-white hover:text-[var(--accent)] transition-colors duration-200 text-xs p-1 rounded bg-transparent hover:bg-[var(--glass-bg-light)]">
-                ⛶
-              </button>
-              <span class="text-[var(--accent)]">THOS</span><span id="version-number"></span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div id="desktop" class="ml-52 h-screen relative">
-        <div id="notification-container" class="fixed top-4 right-4 z-50 flex flex-col gap-3 pointer-events-none"></div>
-      </div>
-
-      <iframe id="screensaver" src="screensaver.html"></iframe>
-
-      <div id="drag-overlay"></div>
-    </div>
-
-    <div id="powerDialog" class="fixed inset-0 z-50 hidden flex items-center justify-center">
-      <div class="bg-black/30 rounded-2xl shadow-2xl p-6 w-80 backdrop-blur-sm text-center text-white">
-        <h2 class="text-xl font-semibold mb-6 tracking-wide">Power Options</h2>
-        <div class="space-y-3">
-          <button id="shutdownBtn"
-            class="w-full py-2 px-4 border border-dotted rounded-xl transition-all duration-200 text-sm bg-black/40 hover:bg-black/50 backdrop-blur-sm border-red-400 text-red-300 hover:text-red-100 hover:border-red-300">Shutdown</button>
-          <button id="restartBtn"
-            class="w-full py-2 px-4 border border-dotted rounded-xl transition-all duration-200 text-sm bg-black/40 hover:bg-black/50 backdrop-blur-sm border-yellow-400 text-yellow-300 hover:text-yellow-100 hover:border-yellow-300">Restart</button>
-          <button id="reloadBtn"
-            class="w-full py-2 px-4 border border-dotted rounded-xl transition-all duration-200 text-sm bg-black/40 hover:bg-black/50 backdrop-blur-sm border-green-400 text-green-300 hover:text-green-100 hover:border-green-300">Reload</button>
-          <button id="cancelBtn"
-            class="w-full py-2 px-4 border border-dotted rounded-xl transition-all duration-200 text-sm bg-black/40 hover:bg-black/50 backdrop-blur-sm border-white/40 text-white hover:text-white hover:border-white/80">Cancel</button>
         </div>
       </div>
     </div>
 
-    <script>
-      window.THOS = {
-        version: '6 Build-28'
-      };
+    <div id="desktop" class="ml-52 h-screen relative">
+      <div id="notification-container" class="fixed top-4 right-4 z-50 flex flex-col gap-3 pointer-events-none"></div>
+    </div>
 
-      let timeoutSeconds = 180;
+    <iframe id="screensaver" src="screensaver.html"></iframe>
 
-      const thosState = <?= json_encode($state ?? ['cookies' => '', 'localData' => '{}']) ?>;
+    <div id="drag-overlay"></div>
+  </div>
 
-      thosState.cookies?.split('; ').forEach(cookie => document.cookie = cookie);
+  <div id="powerDialog" class="fixed inset-0 z-50 hidden flex items-center justify-center">
+    <div class="bg-black/30 rounded-2xl shadow-2xl p-6 w-80 backdrop-blur-sm text-center text-white">
+      <h2 class="text-xl font-semibold mb-6 tracking-wide">Power Options</h2>
+      <div class="space-y-3">
+        <button id="shutdownBtn"
+          class="w-full py-2 px-4 border border-dotted rounded-xl transition-all duration-200 text-sm bg-black/40 hover:bg-black/50 backdrop-blur-sm border-red-400 text-red-300 hover:text-red-100 hover:border-red-300">Shutdown</button>
+        <button id="restartBtn"
+          class="w-full py-2 px-4 border border-dotted rounded-xl transition-all duration-200 text-sm bg-black/40 hover:bg-black/50 backdrop-blur-sm border-yellow-400 text-yellow-300 hover:text-yellow-100 hover:border-yellow-300">Restart</button>
+        <button id="reloadBtn"
+          class="w-full py-2 px-4 border border-dotted rounded-xl transition-all duration-200 text-sm bg-black/40 hover:bg-black/50 backdrop-blur-sm border-green-400 text-green-300 hover:text-green-100 hover:border-green-300">Reload</button>
+        <button id="cancelBtn"
+          class="w-full py-2 px-4 border border-dotted rounded-xl transition-all duration-200 text-sm bg-black/40 hover:bg-black/50 backdrop-blur-sm border-white/40 text-white hover:text-white hover:border-white/80">Cancel</button>
+      </div>
+    </div>
+  </div>
 
-      const localItems = JSON.parse(thosState.localData || '{}');
-      for (let key in localItems) {
-        localStorage.setItem(key, localItems[key]);
+  <script>
+    window.THOS = {
+      version: '6 Build-30'
+    };
+
+    let timeoutSeconds = 180;
+
+    const thosState = <?= json_encode($state ?? ['cookies' => '', 'localData' => '{}']) ?>;
+
+    thosState.cookies?.split('; ').forEach(cookie => document.cookie = cookie);
+
+    const localItems = JSON.parse(thosState.localData || '{}');
+    for (let key in localItems) {
+      localStorage.setItem(key, localItems[key]);
+    }
+
+    if (!localStorage.getItem('thos_done')) {
+      window.location.href = 'oobe.php';
+    }
+
+    class WindowManager {
+      constructor(container) {
+        this.container = container;
+        this.zIndexCounter = 1;
+        this.draggingWindow = null;
+        this.resizingWindow = null;
+        this.resizeDir = null;
+        this.offsetX = 0;
+        this.offsetY = 0;
+        this.startWidth = 0;
+        this.startHeight = 0;
+        this.startLeft = 0;
+        this.startTop = 0;
+        this.isMaximized = new WeakMap();
+        this.activeWindow = null;
+
+        this.dragOverlay = document.getElementById('drag-overlay');
+
+        document.addEventListener('mousemove', this.onMouseMove.bind(this));
+        document.addEventListener('mouseup', this.onMouseUp.bind(this));
+
+        this.makeWindowsDraggable();
       }
 
-      if (!localStorage.getItem('thos_done')) {
-        window.location.href = 'oobe.php';
+      makeWindowsDraggable() {
+        const windows = this.container.querySelectorAll('.window');
+        windows.forEach(win => {
+          const header = win.querySelector('.window-header');
+          this.makeDraggable(win, header);
+          this.makeResizable(win);
+          this.setupButtons(win);
+          this.setupFocus(win);
+        });
       }
 
-      class WindowManager {
-        constructor(container) {
-          this.container = container;
-          this.zIndexCounter = 1;
-          this.draggingWindow = null;
-          this.resizingWindow = null;
-          this.resizeDir = null;
-          this.offsetX = 0;
-          this.offsetY = 0;
-          this.startWidth = 0;
-          this.startHeight = 0;
-          this.startLeft = 0;
-          this.startTop = 0;
-          this.isMaximized = new WeakMap();
-          this.activeWindow = null;
+      setupFocus(win) {
+        win.addEventListener('mousedown', () => {
+          this.bringToFront(win);
+          this.setActiveWindow(win);
+        });
 
-          this.dragOverlay = document.getElementById('drag-overlay');
+        win.addEventListener('focus', () => {
+          this.bringToFront(win);
+          this.setActiveWindow(win);
+        });
+      }
 
-          document.addEventListener('mousemove', this.onMouseMove.bind(this));
-          document.addEventListener('mouseup', this.onMouseUp.bind(this));
-
-          this.makeWindowsDraggable();
+      setActiveWindow(win) {
+        if (this.activeWindow && this.activeWindow !== win) {
+          this.activeWindow.classList.remove('active');
         }
+        this.activeWindow = win;
+        win.classList.add('active');
+      }
 
-        makeWindowsDraggable() {
-          const windows = this.container.querySelectorAll('.window');
-          windows.forEach(win => {
-            const header = win.querySelector('.window-header');
-            this.makeDraggable(win, header);
-            this.makeResizable(win);
-            this.setupButtons(win);
-            this.setupFocus(win);
-          });
-        }
+      makeDraggable(win, header) {
+        header.style.cursor = 'grab';
 
-        setupFocus(win) {
-          win.addEventListener('mousedown', () => {
-            this.bringToFront(win);
-            this.setActiveWindow(win);
-          });
+        header.addEventListener('mousedown', (e) => {
+          if (e.target.closest('button')) return;
 
-          win.addEventListener('focus', () => {
-            this.bringToFront(win);
-            this.setActiveWindow(win);
-          });
-        }
+          e.preventDefault();
+          this.bringToFront(win);
+          this.setActiveWindow(win);
 
-        setActiveWindow(win) {
-          if (this.activeWindow && this.activeWindow !== win) {
-            this.activeWindow.classList.remove('active');
-          }
-          this.activeWindow = win;
-          win.classList.add('active');
-        }
-
-        makeDraggable(win, header) {
-          header.style.cursor = 'grab';
-
-          header.addEventListener('mousedown', (e) => {
-            if (e.target.closest('button')) return;
-
-            e.preventDefault();
-            this.bringToFront(win);
-            this.setActiveWindow(win);
-
-            if (this.isMaximized.get(win)) {
-              win.style.transition = "all 0.2s ease";
-              win.style.left = win.dataset.prevLeft;
-              win.style.top = win.dataset.prevTop;
-              win.style.width = win.dataset.prevWidth;
-              win.style.height = win.dataset.prevHeight;
-              this.isMaximized.set(win, false);
-            }
-
-            this.draggingWindow = win;
-            this.offsetX = e.clientX - win.offsetLeft;
-            this.offsetY = e.clientY - win.offsetTop;
-
-            header.style.cursor = 'grabbing';
-
-            if (this.dragOverlay) {
-              this.dragOverlay.style.display = 'block';
-              this.dragOverlay.style.cursor = 'grabbing';
-            }
-
-            document.body.style.userSelect = 'none';
-          });
-        }
-
-        onMouseMove(e) {
-          if (this.draggingWindow) {
-            let newLeft = e.clientX - this.offsetX;
-            let newTop = e.clientY - this.offsetY;
-
-            const containerRect = this.container.getBoundingClientRect();
-            const winRect = this.draggingWindow.getBoundingClientRect();
-
-            newLeft = Math.max(containerRect.left, Math.min(newLeft, containerRect.right - winRect.width));
-            newTop = Math.max(containerRect.top, Math.min(newTop, containerRect.bottom - winRect.height));
-
-            this.draggingWindow.style.left = newLeft + 'px';
-            this.draggingWindow.style.top = newTop + 'px';
-          }
-        }
-
-        onMouseUp() {
-          if (this.draggingWindow) {
-            const header = this.draggingWindow.querySelector('.window-header');
-            if (header) header.style.cursor = 'grab';
-            this.draggingWindow = null;
-
-            if (this.dragOverlay) {
-              this.dragOverlay.style.display = 'none';
-              this.dragOverlay.style.cursor = '';
-            }
-
-            document.body.style.userSelect = '';
-          }
-
-          if (this.resizingWindow) {
-            this.resizingWindow = null;
-            this.resizeDir = null;
-          }
-        }
-
-        bringToFront(win) {
-          win.style.zIndex = ++this.zIndexCounter;
-        }
-
-        toggleMaximize(win) {
-          if (!this.isMaximized.get(win)) {
-            win.dataset.prevLeft = win.style.left;
-            win.dataset.prevTop = win.style.top;
-            win.dataset.prevWidth = win.style.width;
-            win.dataset.prevHeight = win.style.height;
-
-            win.style.left = "0px";
-            win.style.top = "0px";
-            win.style.width = "100%";
-            win.style.height = "100%";
-            win.style.transition = "all 0.2s ease";
-
-            this.isMaximized.set(win, true);
-          } else {
+          if (this.isMaximized.get(win)) {
             win.style.transition = "all 0.2s ease";
             win.style.left = win.dataset.prevLeft;
             win.style.top = win.dataset.prevTop;
@@ -577,376 +503,454 @@
             win.style.height = win.dataset.prevHeight;
             this.isMaximized.set(win, false);
           }
-        }
-      }
 
-      const tasks = [];
-      let z = 2;
-      const wm = new WindowManager(document.body);
-      const appBar = document.getElementById('trdp');
-      const contextMenu = document.createElement('div');
-      contextMenu.id = 'context-menu';
-      contextMenu.style.position = 'absolute';
-      contextMenu.style.display = 'none';
-      contextMenu.style.background = '#222';
-      contextMenu.style.border = '1px solid #444';
-      contextMenu.style.borderRadius = '6px';
-      contextMenu.style.padding = '6px';
-      contextMenu.style.zIndex = '9999';
-      document.body.appendChild(contextMenu);
+          this.draggingWindow = win;
+          this.offsetX = e.clientX - win.offsetLeft;
+          this.offsetY = e.clientY - win.offsetTop;
 
-      document.addEventListener('click', () => contextMenu.style.display = 'none');
+          header.style.cursor = 'grabbing';
 
-      async function loadApps() {
-        const res = await fetch('apps.php');
-        const apps = await res.json();
-        console.log(apps);
+          if (this.dragOverlay) {
+            this.dragOverlay.style.display = 'block';
+            this.dragOverlay.style.cursor = 'grabbing';
+          }
 
-        appBar.innerHTML = '';
-        apps.forEach(app => {
-          const wrapper = document.createElement('div');
-          wrapper.classList.add('wrapper');
-          wrapper.style.alignItems = 'center';
-          wrapper.style.height = '50px';
-          wrapper.style.width = '50px';
-          wrapper.style.margin = '8px';
-          wrapper.style.transition = 'transform 0.3s ease';
-
-          const btn = document.createElement('img');
-          btn.src = app.icon;
-          btn.alt = app.name;
-          btn.title = app.name;
-          btn.style.height = '50px';
-          btn.style.width = '50px';
-          btn.style.borderRadius = '16px';
-          btn.style.border = '2px solid #ffffff22';
-          btn.style.boxShadow = '0 2px 10px rgba(255, 192, 203, 0.25)';
-          btn.style.background = 'linear-gradient(135deg, #222, #1a1a1a)';
-          btn.style.padding = '6px';
-          btn.style.transition = 'all 0.3s ease';
-          btn.style.cursor = 'pointer';
-
-          btn.onmouseenter = () => {
-            wrapper.style.transform = 'scale(1.08)';
-            btn.style.borderColor = 'var(--accent)';
-            btn.style.boxShadow = '0 4px 16px var(--accent), 0 0 8px var(--accent)';
-
-            for (let i = 0; i < 6; i++) {
-              const sparkle = document.createElement('div');
-              sparkle.classList.add('sparkle');
-
-              sparkle.style.top = `${Math.random() * 100}%`;
-              sparkle.style.left = `${Math.random() * 100}%`;
-
-              sparkle.style.animationDelay = `${Math.random() * 1.5}s`;
-
-              wrapper.appendChild(sparkle);
-
-              sparkle.addEventListener('animationiteration', () => sparkle.remove());
-            }
-          };
-
-          btn.onmouseleave = () => {
-            wrapper.style.transform = 'scale(1)';
-            btn.style.borderColor = '#ffffff22';
-            btn.style.boxShadow = '0 2px 10px rgba(255, 192, 203, 0.25)';
-
-            const sparkles = wrapper.querySelectorAll('.sparkle');
-            sparkles.forEach(s => s.remove());
-          };
-
-          btn.onclick = () => openApp(app.path, app.name);
-
-          wrapper.appendChild(btn);
-
-          wrapper.oncontextmenu = e => {
-            e.preventDefault();
-            showContextMenu(e.pageX, e.pageY, app);
-          };
-
-          appBar.appendChild(wrapper);
+          document.body.style.userSelect = 'none';
         });
       }
 
-      function showContextMenu(x, y, app) {
-        contextMenu.innerHTML = `
+      onMouseMove(e) {
+        if (this.draggingWindow) {
+          let newLeft = e.clientX - this.offsetX;
+          let newTop = e.clientY - this.offsetY;
+
+          const containerRect = this.container.getBoundingClientRect();
+          const winRect = this.draggingWindow.getBoundingClientRect();
+
+          newLeft = Math.max(containerRect.left, Math.min(newLeft, containerRect.right - winRect.width));
+          newTop = Math.max(containerRect.top, Math.min(newTop, containerRect.bottom - winRect.height));
+
+          this.draggingWindow.style.left = newLeft + 'px';
+          this.draggingWindow.style.top = newTop + 'px';
+        }
+      }
+
+      onMouseUp() {
+        if (this.draggingWindow) {
+          const header = this.draggingWindow.querySelector('.window-header');
+          if (header) header.style.cursor = 'grab';
+          this.draggingWindow = null;
+
+          if (this.dragOverlay) {
+            this.dragOverlay.style.display = 'none';
+            this.dragOverlay.style.cursor = '';
+          }
+
+          document.body.style.userSelect = '';
+        }
+
+        if (this.resizingWindow) {
+          this.resizingWindow = null;
+          this.resizeDir = null;
+        }
+      }
+
+      bringToFront(win) {
+        win.style.zIndex = ++this.zIndexCounter;
+      }
+
+      toggleMaximize(win) {
+        if (!this.isMaximized.get(win)) {
+          win.dataset.prevLeft = win.style.left;
+          win.dataset.prevTop = win.style.top;
+          win.dataset.prevWidth = win.style.width;
+          win.dataset.prevHeight = win.style.height;
+
+          win.style.left = "0px";
+          win.style.top = "0px";
+          win.style.width = "100%";
+          win.style.height = "100%";
+          win.style.transition = "all 0.2s ease";
+
+          this.isMaximized.set(win, true);
+        } else {
+          win.style.transition = "all 0.2s ease";
+          win.style.left = win.dataset.prevLeft;
+          win.style.top = win.dataset.prevTop;
+          win.style.width = win.dataset.prevWidth;
+          win.style.height = win.dataset.prevHeight;
+          this.isMaximized.set(win, false);
+        }
+      }
+    }
+
+    const tasks = [];
+    let z = 2;
+    const wm = new WindowManager(document.body);
+    const appBar = document.getElementById('trdp');
+    const contextMenu = document.createElement('div');
+    contextMenu.id = 'context-menu';
+    contextMenu.style.position = 'absolute';
+    contextMenu.style.display = 'none';
+    contextMenu.style.background = '#222';
+    contextMenu.style.border = '1px solid #444';
+    contextMenu.style.borderRadius = '6px';
+    contextMenu.style.padding = '6px';
+    contextMenu.style.zIndex = '9999';
+    document.body.appendChild(contextMenu);
+
+    document.addEventListener('click', () => contextMenu.style.display = 'none');
+
+    async function loadApps() {
+      const res = await fetch('apps.php');
+      const apps = await res.json();
+      console.log(apps);
+
+      appBar.innerHTML = '';
+      apps.forEach(app => {
+        const wrapper = document.createElement('div');
+        wrapper.classList.add('wrapper');
+        wrapper.style.alignItems = 'center';
+        wrapper.style.height = '50px';
+        wrapper.style.width = '50px';
+        wrapper.style.margin = '8px';
+        wrapper.style.transition = 'transform 0.3s ease';
+
+        const btn = document.createElement('img');
+        btn.src = app.icon;
+        btn.alt = app.name;
+        btn.title = app.name;
+        btn.style.height = '50px';
+        btn.style.width = '50px';
+        btn.style.borderRadius = '16px';
+        btn.style.border = '2px solid #ffffff22';
+        btn.style.boxShadow = '0 2px 10px rgba(255, 192, 203, 0.25)';
+        btn.style.background = 'linear-gradient(135deg, #222, #1a1a1a)';
+        btn.style.padding = '6px';
+        btn.style.transition = 'all 0.3s ease';
+        btn.style.cursor = 'pointer';
+
+        btn.onmouseenter = () => {
+          wrapper.style.transform = 'scale(1.08)';
+          btn.style.borderColor = 'var(--accent)';
+          btn.style.boxShadow = '0 4px 16px var(--accent), 0 0 8px var(--accent)';
+
+          for (let i = 0; i < 6; i++) {
+            const sparkle = document.createElement('div');
+            sparkle.classList.add('sparkle');
+
+            sparkle.style.top = `${Math.random() * 100}%`;
+            sparkle.style.left = `${Math.random() * 100}%`;
+
+            sparkle.style.animationDelay = `${Math.random() * 1.5}s`;
+
+            wrapper.appendChild(sparkle);
+
+            sparkle.addEventListener('animationiteration', () => sparkle.remove());
+          }
+        };
+
+        btn.onmouseleave = () => {
+          wrapper.style.transform = 'scale(1)';
+          btn.style.borderColor = '#ffffff22';
+          btn.style.boxShadow = '0 2px 10px rgba(255, 192, 203, 0.25)';
+
+          const sparkles = wrapper.querySelectorAll('.sparkle');
+          sparkles.forEach(s => s.remove());
+        };
+
+        btn.onclick = () => openApp(app.path, app.name);
+
+        wrapper.appendChild(btn);
+
+        wrapper.oncontextmenu = e => {
+          e.preventDefault();
+          showContextMenu(e.pageX, e.pageY, app);
+        };
+
+        appBar.appendChild(wrapper);
+      });
+    }
+
+    function showContextMenu(x, y, app) {
+      contextMenu.innerHTML = `
       <div onclick="uninstallApp('${app.id}')">🗑️ Uninstall</div>
       `;
-        contextMenu.style.left = `${x}px`;
-        contextMenu.style.top = `${y}px`;
-        contextMenu.style.display = 'block';
+      contextMenu.style.left = `${x}px`;
+      contextMenu.style.top = `${y}px`;
+      contextMenu.style.display = 'block';
+    }
+
+    function openApp(url, title, sandbox = false) {
+      const id = 'win_' + Date.now();
+      const win = document.createElement('div');
+      win.className = 'window';
+      win.style.top = Math.random() * 300 + 'px';
+      win.style.left = Math.random() * 400 + 'px';
+      win.style.zIndex = z++;
+      win.setAttribute('data-id', id);
+
+      win.innerHTML = `
+          <div class="window-header">
+            <span class="window-title">${title}</span>
+            <div class="window-controls">
+              <button class="max-btn" title="Maximize/Restore">🗖</button>
+              <button class="close-btn" title="Close">×</button>
+            </div>
+          </div>`
+        ;
+
+      if (!sandbox) {
+        win.innerHTML += `<iframe src="${url}" class="window-content" allowtransparency="true"></iframe>`;
+      } else {
+        win.innerHTML += `<iframe src="${url}" sandbox="allow-scripts allow-forms allow-same-origin" class="window-content" allowtransparency="true"></iframe>`;
       }
 
-      function openApp(url, title, sandbox = false) {
-        const id = 'win_' + Date.now();
-        const win = document.createElement('div');
-        win.className = 'window';
-        win.style.top = Math.random() * 300 + 'px';
-        win.style.left = Math.random() * 400 + 'px';
-        win.style.zIndex = z++;
-        win.setAttribute('data-id', id);
+      document.getElementById('desktop').appendChild(win);
+      tasks.push({ id, title, url });
+      let header = win.querySelector(".window-header");
+      wm.makeDraggable(win, header);
+      header.querySelector('.max-btn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        wm.toggleMaximize(win);
+      });
+      header.querySelector('.close-btn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        closeApp(id);
+      });
+    }
 
-        win.innerHTML = `
-        <div class="window-header">
-          <span class="window-title">${title}</span>
-          <div class="window-controls">
-            <button class="max-btn" title="Maximize/Restore">🗖</button>
-            <button class="close-btn" title="Close">×</button>
-          </div>
-        </div>
-      `;
+    function closeApp(id) {
+      const win = document.querySelector(`.window[data-id='${id}']`);
+      if (win) win.remove();
+      const idx = tasks.findIndex(t => t.id === id);
+      if (idx !== -1) tasks.splice(idx, 1);
+    }
 
-        if (!sandbox) {
-          win.innerHTML += `<iframe src="${url}" class="window-content" allowtransparency="true"></iframe>`;
+    function focusApp(id) {
+      const win = document.querySelector(`.window[data-id='${id}']`);
+      if (win) win.style.zIndex = z++;
+    }
+
+    function uninstallApp(appId) {
+      if (!confirm("Are you sure you want to uninstall this app?")) return;
+      fetch(`uninstaller.php?id=${encodeURIComponent(appId)}`)
+        .then(res => res.text())
+        .then(() => loadApps());
+    }
+
+    loadApps();
+
+    window.addEventListener('message', async (event) => {
+      const { type, appId, packageFileUrl } = event.data || {};
+
+      if (type === 'THOS_INSTALL_APP') {
+        try {
+          const isValid = /^https:\/\/surillya\.com\//.test(packageFileUrl);
+          const fileName = packageFileUrl.split('/').pop().split('?')[0];
+          const outputPath = `/home/surillya/.temp/${fileName}`;
+
+          // I HATE UNDERSCORES!!!!
+          // underscore =/= dash
+          const url = `/install_app.php?url=${encodeURIComponent(packageFileUrl)}&output=${encodeURIComponent(outputPath)}&verified=${isValid ? 1 : 0}`;
+          const response = await fetch(url);
+          const result = await response.json();
+
+          if (!result.success) throw new Error(result.message);
+
+          const appUrl = `thp.php?q=${encodeURIComponent(result.filename)}&v=${result.verified}`;
+          window.openApp(appUrl, 'THOS Package Installer');
+        } catch (err) {
+          console.error('[THOS] App install failed:', err);
+          alert('Failed to install app.');
+        }
+      }
+    });
+
+    window.getTaskList = () => JSON.parse(JSON.stringify(tasks));
+    window.focusApp = focusApp;
+    window.closeApp = closeApp;
+    window.openApp = openApp;
+    window.reloadApps = loadApps;
+    window.saveTHOSState = saveTHOSState;
+
+    function applySettings(settings) {
+      console.log(settings);
+
+      function applyTheme(theme) {
+        document.body.className = theme;
+      }
+
+      const savedTheme = settings.theme;
+      if (savedTheme) applyTheme(savedTheme);
+
+      document.documentElement.style.setProperty('--accent', settings.accentColor || '#ff69b4');
+
+      if (settings.wallpaper) {
+        document.getElementById('bg-image').style.background = `url('file.php?q=${settings.wallpaper}') center/cover`;
+      } else {
+        document.getElementById('bg-image').style.background = '';
+      }
+
+      const audio = document.getElementById('bgMusic');
+      if (audio) {
+        if (settings.musicEnabled === 'on') {
+          document.addEventListener("click", function () {
+            audio.src = `file.php?q=${settings.music}`;
+            audio.volume = parseFloat(settings.musicVolume || 0.3);
+            audio.play().catch(() => {
+              alert('An error occured while starting background music. Please turn background music off, or enable autoplay.');
+            });
+          }, { once: true });
         } else {
-          win.innerHTML += `<iframe src="${url}" sandbox="allow-scripts allow-forms allow-same-origin" class="window-content" allowtransparency="true"></iframe>`;
+          audio.pause;
         }
-
-        document.getElementById('desktop').appendChild(win);
-        tasks.push({ id, title, url });
-        let header = win.querySelector(".window-header");
-        wm.makeDraggable(win, header);
-        header.querySelector('.max-btn').addEventListener('click', (e) => {
-          e.stopPropagation();
-          wm.toggleMaximize(win);
-        });
-        header.querySelector('.close-btn').addEventListener('click', (e) => {
-          e.stopPropagation();
-          closeApp(id);
-        });
       }
 
-      function closeApp(id) {
-        const win = document.querySelector(`.window[data-id='${id}']`);
-        if (win) win.remove();
-        const idx = tasks.findIndex(t => t.id === id);
-        if (idx !== -1) tasks.splice(idx, 1);
-      }
+      timeoutSeconds = settings.screenTimeout ?? timeoutSeconds;
 
-      function focusApp(id) {
-        const win = document.querySelector(`.window[data-id='${id}']`);
-        if (win) win.style.zIndex = z++;
-      }
-
-      function uninstallApp(appId) {
-        if (!confirm("Are you sure you want to uninstall this app?")) return;
-        fetch(`uninstaller.php?id=${encodeURIComponent(appId)}`)
-          .then(res => res.text())
-          .then(() => loadApps());
-      }
-
-      loadApps();
-
-      window.addEventListener('message', async (event) => {
-        const { type, appId, packageFileUrl } = event.data || {};
-
-        if (type === 'THOS_INSTALL_APP') {
-          try {
-            const isValid = /^https:\/\/surillya\.com\//.test(packageFileUrl);
-            const fileName = packageFileUrl.split('/').pop().split('?')[0];
-            const outputPath = `/home/surillya/.temp/${fileName}`;
-
-            // I HATE UNDERSCORES!!!!
-            // underscore =/= dash
-            const url = `/install_app.php?url=${encodeURIComponent(packageFileUrl)}&output=${encodeURIComponent(outputPath)}&verified=${isValid ? 1 : 0}`;
-            const response = await fetch(url);
-            const result = await response.json();
-
-            if (!result.success) throw new Error(result.message);
-
-            const appUrl = `thp.php?q=${encodeURIComponent(result.filename)}&v=${result.verified}`;
-            window.openApp(appUrl, 'THOS Package Installer');
-          } catch (err) {
-            console.error('[THOS] App install failed:', err);
-            alert('Failed to install app.');
-          }
+      window.THOS = Object.assign(window.THOS || {}, {
+        getAllSettings() {
+          return settings;
         }
       });
 
-      window.getTaskList = () => JSON.parse(JSON.stringify(tasks));
-      window.focusApp = focusApp;
-      window.closeApp = closeApp;
-      window.openApp = openApp;
-      window.reloadApps = loadApps;
-      window.saveTHOSState = saveTHOSState;
+      saveTHOSState();
+    }
 
-      function applySettings(settings) {
-        console.log(settings);
+    const savedSettings = JSON.parse(localStorage.getItem('settings')) || {};
+    applySettings(savedSettings);
 
-        function applyTheme(theme) {
-          document.body.className = theme;
-        }
-
-        const savedTheme = settings.theme;
-        if (savedTheme) applyTheme(savedTheme);
-
-        document.documentElement.style.setProperty('--accent', settings.accentColor || '#ff69b4');
-
-        if (settings.wallpaper) {
-          document.getElementById('bg-image').style.background = `url('file.php?q=${settings.wallpaper}') center/cover`;
-        } else {
-          document.getElementById('bg-image').style.background = '';
-        }
-
-        const audio = document.getElementById('bgMusic');
-        if (audio) {
-          if (settings.musicEnabled === 'on') {
-            document.addEventListener("click", function () {
-              audio.src = `file.php?q=${settings.music}`;
-              audio.volume = parseFloat(settings.musicVolume || 0.3);
-              audio.play().catch(() => {
-                alert('An error occured while starting background music. Please turn background music off, or enable autoplay.');
-              });
-            }, { once: true });
-          } else {
-            audio.pause;
-          }
-        }
-
-        timeoutSeconds = settings.screenTimeout ?? timeoutSeconds;
-
-        window.THOS = Object.assign(window.THOS || {}, {
-          getAllSettings() {
-            return settings;
-          }
-        });
-
-        saveTHOSState();
+    window.addEventListener('message', (event) => {
+      if (event.data?.type === 'applySettings') {
+        applySettings(event.data.settings);
       }
+    });
 
-      const savedSettings = JSON.parse(localStorage.getItem('settings')) || {};
-      applySettings(savedSettings);
+    function saveTHOSState() {
+      const cookies = document.cookie;
+      const localData = JSON.stringify(localStorage);
 
-      window.addEventListener('message', (event) => {
-        if (event.data?.type === 'applySettings') {
-          applySettings(event.data.settings);
-        }
+      fetch('save_state.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cookies, localData })
       });
+    }
 
-      function saveTHOSState() {
-        const cookies = document.cookie;
-        const localData = JSON.stringify(localStorage);
+    setInterval(saveTHOSState, 60000);
+    window.addEventListener('beforeunload', saveTHOSState);
 
-        fetch('save_state.php', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ cookies, localData })
-        });
-      }
+    const powerButton = document.getElementById('powerButton');
+    const powerDialog = document.getElementById('powerDialog');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const shutdownBtn = document.getElementById('shutdownBtn');
+    const restartBtn = document.getElementById('restartBtn');
+    const reloadBtn = document.getElementById('reloadBtn');
 
-      setInterval(saveTHOSState, 60000);
-      window.addEventListener('beforeunload', saveTHOSState);
+    powerButton.addEventListener('click', () => {
+      document.getElementById("appWrapper").classList.add("grayscale-bg");
+      powerDialog.classList.remove('hidden');
+    });
 
-      const powerButton = document.getElementById('powerButton');
-      const powerDialog = document.getElementById('powerDialog');
-      const cancelBtn = document.getElementById('cancelBtn');
-      const shutdownBtn = document.getElementById('shutdownBtn');
-      const restartBtn = document.getElementById('restartBtn');
-      const reloadBtn = document.getElementById('reloadBtn');
+    cancelBtn.addEventListener('click', () => {
+      document.getElementById("appWrapper").classList.remove("grayscale-bg");
+      powerDialog.classList.add('hidden');
+    });
 
-      powerButton.addEventListener('click', () => {
-        document.getElementById("appWrapper").classList.add("grayscale-bg");
-        powerDialog.classList.remove('hidden');
-      });
+    shutdownBtn.addEventListener('click', () => {
+      sendCommand('shutdown');
+      document.getElementById("appWrapper").classList.remove("grayscale-bg");
+      powerDialog.classList.add('hidden');
+    });
 
-      cancelBtn.addEventListener('click', () => {
+    restartBtn.addEventListener('click', () => {
+      sendCommand('reboot');
+      document.getElementById("appWrapper").classList.remove("grayscale-bg");
+      powerDialog.classList.add('hidden');
+    });
+
+    reloadBtn.addEventListener('click', () => {
+      location.reload();
+    });
+
+    powerDialog.addEventListener('click', (e) => {
+      if (e.target === powerDialog) {
         document.getElementById("appWrapper").classList.remove("grayscale-bg");
         powerDialog.classList.add('hidden');
-      });
-
-      shutdownBtn.addEventListener('click', () => {
-        sendCommand('shutdown');
-        document.getElementById("appWrapper").classList.remove("grayscale-bg");
-        powerDialog.classList.add('hidden');
-      });
-
-      restartBtn.addEventListener('click', () => {
-        sendCommand('reboot');
-        document.getElementById("appWrapper").classList.remove("grayscale-bg");
-        powerDialog.classList.add('hidden');
-      });
-
-      reloadBtn.addEventListener('click', () => {
-        location.reload();
-      });
-
-      powerDialog.addEventListener('click', (e) => {
-        if (e.target === powerDialog) {
-          document.getElementById("appWrapper").classList.remove("grayscale-bg");
-          powerDialog.classList.add('hidden');
-        }
-      });
-
-      function sendCommand(action) {
-        fetch(`server_command.php?action=${encodeURIComponent(action)}`)
-          .then(res => res.text())
-          .then(result => {
-            alert("Server response: " + result);
-          })
-          .catch(err => {
-            alert("Failed to send command: " + err);
-          });
       }
+    });
 
-      document.getElementById('version-number').textContent = window.THOS.version;
+    function sendCommand(action) {
+      fetch(`server_command.php?action=${encodeURIComponent(action)}`)
+        .then(res => res.text())
+        .then(result => {
+          alert("Server response: " + result);
+        })
+        .catch(err => {
+          alert("Failed to send command: " + err);
+        });
+    }
 
-      document.getElementById("fullscreen-toggle").addEventListener("click", () => {
-        if (!document.fullscreenElement) {
-          document.documentElement.requestFullscreen().catch(err => {
-            console.error(`Failed to enter fullscreen: ${err.message}`);
-          });
-        } else {
-          document.exitFullscreen();
-        }
-      });
+    document.getElementById('version-number').textContent = window.THOS.version;
 
-      const screensaver = document.getElementById("screensaver");
-      let screensaverTimeout;
-
-      function showScreensaver() {
-        screensaver.style.display = "block";
+    document.getElementById("fullscreen-toggle").addEventListener("click", () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+          console.error(`Failed to enter fullscreen: ${err.message}`);
+        });
+      } else {
+        document.exitFullscreen();
       }
+    });
 
-      function hideScreensaver() {
-        if (screensaver.style.display === "block") {
-          screensaver.contentWindow.postMessage({ type: 'screensaver_hidden' }, '*'); // optional
-        }
-        screensaver.style.display = "none";
+    const screensaver = document.getElementById("screensaver");
+    let screensaverTimeout;
+
+    function showScreensaver() {
+      screensaver.style.display = "block";
+    }
+
+    function hideScreensaver() {
+      if (screensaver.style.display === "block") {
+        screensaver.contentWindow.postMessage({ type: 'screensaver_hidden' }, '*'); // optional
       }
+      screensaver.style.display = "none";
+    }
 
-      function resetInactivityTimer() {
-        hideScreensaver();
-        clearTimeout(screensaverTimeout);
-        screensaverTimeout = setTimeout(showScreensaver, timeoutSeconds * 1000);
+    function resetInactivityTimer() {
+      hideScreensaver();
+      clearTimeout(screensaverTimeout);
+      screensaverTimeout = setTimeout(showScreensaver, timeoutSeconds * 1000);
+    }
+
+    ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart', 'wheel'].forEach(event => {
+      document.addEventListener(event, resetInactivityTimer, { passive: true });
+    });
+
+    window.addEventListener("message", event => {
+      if (event.data?.type === "user_active") {
+        resetInactivityTimer();
       }
+    });
 
-      ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart', 'wheel'].forEach(event => {
-        document.addEventListener(event, resetInactivityTimer, { passive: true });
-      });
+    resetInactivityTimer();
 
-      window.addEventListener("message", event => {
-        if (event.data?.type === "user_active") {
-          resetInactivityTimer();
-        }
-      });
+    function notify(title, description = "", options = {}) {
+      const {
+        type = "info",
+        timeout = 5000,
+        icon = null,
+        id = `notif-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+      } = options;
 
-      resetInactivityTimer();
+      const container = document.getElementById("notification-container");
 
-      function notify(title, description = "", options = {}) {
-        const {
-          type = "info",
-          timeout = 5000,
-          icon = null,
-          id = `notif-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
-        } = options;
+      const notification = document.createElement("div");
+      notification.className = `notification ${type}`;
+      notification.id = id;
 
-        const container = document.getElementById("notification-container");
-
-        const notification = document.createElement("div");
-        notification.className = `notification ${type}`;
-        notification.id = id;
-
-        notification.innerHTML = `
+      notification.innerHTML = `
     ${icon ? `<div class="text-xl">${icon}</div>` : ""}
     <div class="flex-1">
       <div class="notification-title font-semibold">${title}</div>
@@ -955,26 +959,26 @@
     <button class="notification-dismiss absolute top-2 right-2 text-white/50 hover:text-white transition-colors text-sm" aria-label="Dismiss">&times;</button>
   `;
 
-        const dismiss = () => {
-          notification.style.animation = "fadeOut 0.25s ease-out forwards";
-          setTimeout(() => {
-            if (container.contains(notification)) container.removeChild(notification);
-          }, 250);
-        };
+      const dismiss = () => {
+        notification.style.animation = "fadeOut 0.25s ease-out forwards";
+        setTimeout(() => {
+          if (container.contains(notification)) container.removeChild(notification);
+        }, 250);
+      };
 
-        notification.querySelector(".notification-dismiss").onclick = dismiss;
+      notification.querySelector(".notification-dismiss").onclick = dismiss;
 
-        container.appendChild(notification);
+      container.appendChild(notification);
 
-        if (timeout > 0) {
-          setTimeout(() => {
-            if (container.contains(notification)) dismiss();
-          }, timeout);
-        }
+      if (timeout > 0) {
+        setTimeout(() => {
+          if (container.contains(notification)) dismiss();
+        }, timeout);
       }
+    }
 
-      window.notify = notify;
-    </script>
-  </body>
+    window.notify = notify;
+  </script>
+</body>
 
-  </html>
+</html>
