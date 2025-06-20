@@ -6,7 +6,7 @@
 
   <head>
     <meta charset="UTF-8">
-    <title>SurillyaOS</title>
+    <title>THOS</title>
     <style>
       :root {
         --accent: #4CAF50;
@@ -408,7 +408,7 @@
 
     <script>
       window.THOS = {
-        version: '6 Build-26'
+        version: '6 Build-28'
       };
 
       let timeoutSeconds = 180;
