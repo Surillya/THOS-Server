@@ -368,7 +368,7 @@ if (!$state || !isset($state['localData']) || !json_decode($state['localData'], 
             </svg>
           </button>
 
-          <button onclick="openApp('https://surillya.com/thos/search/thossearch.html', 'Internet', true)"
+          <button onclick="openApp('internet.php', 'Internet', true)"
             title="Internet" class="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition-all">
             <svg class="w-6 h-6 text-green-300 mx-auto" fill="none" stroke="currentColor" stroke-width="2"
               viewBox="0 0 24 24">
