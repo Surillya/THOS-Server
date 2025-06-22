@@ -20,7 +20,7 @@ if (!file_exists($extensionMarker)) {
 </body>
 </html>';
   if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['install'] === 'yes') {
-    shell_exec('bash /usr/thos/install-unblocker.sh');
+    shell_exec(' sudo bash /usr/thos/install-unblocker.sh');
     file_put_contents($extensionMarker, 'installed');
     echo '<script>alert("Extension installed. System will reboot.");</script>';
     sleep(1);
