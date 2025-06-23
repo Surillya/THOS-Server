@@ -1,6 +1,7 @@
 <?php
 $mode = $_GET['mode'] ?? 'git';
 $repoPath = '/usr/thos';
+shell_exec("git config --system --add safe.directory /usr/thos");
 
 function getLatestLocalCommit($path) {
     return trim(shell_exec("git -C $path rev-parse HEAD"));
