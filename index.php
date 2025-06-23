@@ -319,7 +319,7 @@ if (!$state || !isset($state['localData']) || !json_decode($state['localData'], 
               </svg>
             </button>
             <!-- Don't work for no reason -->
-            <!-- <button id="volume-toggle" class="group p-1 hover:bg-[#2e2e2e] rounded-md" title="Volume">
+            <button id="volume-toggle" class="group p-1 hover:bg-[#2e2e2e] rounded-md" title="Volume">
               <svg class="w-6 h-6 text-gray-300 group-hover:text-green-400 transition-all" viewBox="0 0 24 24"
                 fill="currentColor">
                 <path d="M5 9v6h4l5 5V4l-5 5H5z" />
@@ -333,7 +333,7 @@ if (!$state || !isset($state['localData']) || !json_decode($state['localData'], 
                 <path
                   d="M12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12zm0-16v2m0 16v2m8-10h2M2 12H0m17.66 6.34l1.41 1.41M4.93 4.93l1.41 1.41m0 12.73l-1.41 1.41M19.07 4.93l-1.41 1.41" />
               </svg>
-            </button> -->
+            </button>
           </div>
         </div>
 
@@ -368,7 +368,7 @@ if (!$state || !isset($state['localData']) || !json_decode($state['localData'], 
             </svg>
           </button>
 
-          <button onclick="openApp('internet.php', 'Internet', true)"
+          <button onclick="openApp('internet.php', 'Internet')"
             title="Internet" class="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition-all">
             <svg class="w-6 h-6 text-green-300 mx-auto" fill="none" stroke="currentColor" stroke-width="2"
               viewBox="0 0 24 24">
